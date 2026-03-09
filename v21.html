@@ -715,6 +715,15 @@
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+        import { ProceduralTerrainSystem } from './engine/terrain.js';
+        import { WorldChunkManager } from './engine/chunkManager.js';
+        import { InstancedWorldObjects } from './engine/world.js';
+        import { JetModelSystem } from './engine/models.js';
+        import { AdvancedLightingSystem } from './engine/lighting.js';
+        import { AtmosphereSystem } from './engine/atmosphere.js';
+        import { OceanSystem } from './engine/water.js';
+        import { GpuParticleSystem } from './engine/particles.js';
+        import { RenderDebugPanel } from './engine/renderer.js';
 
         const CONFIG = {
             fov: 60,
@@ -4939,6 +4948,25 @@
                 this.bloomPass.radius = 0.5;
                 this.composer.addPass(this.bloomPass);
 
+                // Modular rendering/world systems (chunk streaming + terrain + atmosphere + GPU particles).
+                this.advancedLighting = new AdvancedLightingSystem(this.renderer, this.scene);
+                this.advancedLighting.init();
+                this.terrainSystem = new ProceduralTerrainSystem(this.scene, { viewRadius: State.platform.isMobile ? 1 : 2 });
+                this.worldObjects = new InstancedWorldObjects(this.scene, { maxInstances: State.platform.isMobile ? 1600 : 3800 });
+                this.chunkManager = new WorldChunkManager({
+                    chunkSize: this.terrainSystem.options.chunkSize,
+                    range: this.terrainSystem.options.viewRadius,
+                    onChunkEnter: (cx, cz) => this.worldObjects.spawnChunk(cx, cz, this.terrainSystem.options.chunkSize, (x, z) => this.terrainSystem._height(x, z)),
+                    onChunkLeave: (cx, cz) => this.worldObjects.despawnChunk(cx, cz)
+                });
+                this.atmosphereSystem = new AtmosphereSystem(this.scene);
+                this.atmosphereSystem.init();
+                this.oceanSystem = new OceanSystem(this.scene);
+                this.oceanSystem.init();
+                this.gpuParticles = new GpuParticleSystem(this.scene, State.platform.isMobile ? 700 : 1800);
+                this.jetModelSystem = new JetModelSystem();
+                this.renderDebugPanel = new RenderDebugPanel(this.renderer);
+
                 this.clock = new THREE.Clock();
 
                 this.audio = new AudioManager();
@@ -5064,13 +5092,10 @@
                     }
                 });
 
-                const plane = new THREE.Mesh(
-                    new THREE.PlaneGeometry(12000, 12000),
-                    groundMat
-                );
-                plane.rotation.x = -Math.PI / 2;
-                plane.receiveShadow = true;
-                this.scene.add(plane);
+                // Keep legacy material for compatibility, but world floor now comes from streamed terrain chunks.
+                this.terrainLegacyMaterial = groundMat;
+                this.terrainSystem.update(new THREE.Vector3(0, 0, 0));
+                this.chunkManager.update(new THREE.Vector3(0, 0, 0));
 
                 this.cityGroup = AssetFactory.createEnvironment();
                 this.scene.add(this.cityGroup);
@@ -5084,6 +5109,14 @@
                 this.player.position.set(0, 150, 0);
                 this.velocity = new THREE.Vector3(0, 0, -1);
                 this.speed = CONFIG.jetSpeedMin;
+
+                // Non-blocking GLTF replacement with fallback to procedural jets.
+                this.jetModelSystem.loadJet(State.currentJetType, (type) => AssetFactory.createJetMesh(type)).then((model) => {
+                    if (!model || !this.player) return;
+                    if (this.jetMesh?.parent === this.player) this.player.remove(this.jetMesh);
+                    this.jetMesh = model;
+                    this.player.add(this.jetMesh);
+                });
             }
 
             damageBuilding(building, damage) {
@@ -7038,8 +7071,21 @@
                     if(this.contrailTimer > 0.03) {
                         this.contrailTimer = 0;
                         this.emitContrail();
+                        if (this.gpuParticles) {
+                            const engineTrailVel = this.velocity.clone().multiplyScalar(-20);
+                            this.gpuParticles.emit(this.player.position.clone(), engineTrailVel, 4);
+                        }
                     }
                 }
+
+                if (this.player) {
+                    this.terrainSystem.update(this.player.position);
+                    this.chunkManager.update(this.player.position);
+                }
+                this.atmosphereSystem.update(dt);
+                this.oceanSystem.update(dt);
+                this.gpuParticles.update(dt);
+                this.renderDebugPanel.update(dt);
 
                 this.composer.render();
             }
@@ -7071,6 +7117,12 @@
 
             engine.jetMesh = AssetFactory.createJetMesh(type);
             engine.player.add(engine.jetMesh);
+            engine.jetModelSystem.loadJet(type, (jetType) => AssetFactory.createJetMesh(jetType)).then((model) => {
+                if (!model || State.currentJetType !== type || !engine.player) return;
+                if (engine.jetMesh?.parent === engine.player) engine.player.remove(engine.jetMesh);
+                engine.jetMesh = model;
+                engine.player.add(engine.jetMesh);
+            });
 
             engine.player.position.copy(pos);
             engine.player.quaternion.copy(quat);
