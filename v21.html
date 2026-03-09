@@ -660,9 +660,9 @@
         </div>
     </div>
 
-    <!-- Mobile Controls -->
+    
     <div id="mobile-controls">
-        <!-- Left Joystick (Pitch/Yaw) -->
+        
         <div id="joystick-left" class="joystick-container">
             <div class="joystick-label">PITCH/YAW</div>
             <div class="joystick-base">
@@ -670,7 +670,7 @@
             </div>
         </div>
 
-        <!-- Right Joystick (Roll/Throttle) -->
+        
         <div id="joystick-right" class="joystick-container">
             <div class="joystick-label">ROLL/THRUST</div>
             <div class="joystick-base">
@@ -678,7 +678,7 @@
             </div>
         </div>
 
-        <!-- Mobile Action Buttons -->
+        
         <div class="mobile-button-cluster">
             <button id="btn-missile" class="mobile-button">MISSILE<br><span style="font-size:9px;">2-TAP</span></button>
             <button id="btn-icbm" class="mobile-button">ICBM</button>
@@ -687,14 +687,14 @@
             <button id="btn-antidrone" class="mobile-button">ANTI<br>DRONE</button>
         </div>
 
-        <!-- Toggle Orientation Button -->
+        
         <button id="toggle-orientation-btn">↻</button>
 
-        <!-- Mobile Debug Indicator -->
+        
         <div id="mobile-debug-indicator">READY</div>
     </div>
 
-    <!-- Rotate Device Overlay -->
+    
     <div id="rotate-overlay">
         <div id="rotate-icon">📱</div>
         <div id="rotate-message">Please Rotate Device to Landscape</div>
@@ -716,19 +716,11 @@
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
-        // ================================
-        // CORE CONFIGURATION
-        // [DO NOT MODIFY] - All tweakable game values
-        // [SAFE TO EXTEND] - Add new config categories below
-        // ================================
-
         const CONFIG = {
-            // Visual Settings
             fov: 60,
             fogColor: 0x87CEEB,
             groundColor: 0x3a5f0b,
 
-            // Player Flight Physics
             jetSpeedMin: 40,
             jetSpeedMax: 220,
             jetSpeedReverse: 20,
@@ -736,22 +728,18 @@
             rollSpeed: 2.5,
             boostMultiplier: 2.5,
 
-            // Mobile Detection
             mobileScreenWidthThreshold: 1024,
             mobileTouchRequired: true,
 
-            // Mobile Controls
             joystickSize: 100,
             joystickDeadzone: 0.15,
             joystickOpacity: 0.6,
             joystickSmoothness: 0.2,
 
-            // Mobile Button Layout
             buttonSize: 70,
             buttonSpacing: 15,
             buttonOpacity: 0.7,
 
-            // Mobile Performance Overrides
             mobileOverrides: {
                 maxParticles: 0.7, // 30% reduction
                 shadowMapSize: 1024, // Reduced from 2048
@@ -762,7 +750,6 @@
                 treeCountReduction: 0.5
             },
 
-            // Vibration Patterns
             vibration: {
                 lightHit: [30],
                 missileLaunch: [50, 30, 50],
@@ -771,7 +758,6 @@
                 boost: [20]
             },
 
-            // Weapon Settings
             bulletDamage: 25,
             bulletSpeed: 1600,
             bulletLifetime: 2,
@@ -791,7 +777,6 @@
             bombCooldownTime: 1.0,
             bombExplosionRadius: 120,
 
-            // Enemy Settings
             droneHP: 50,
             enemyJetHP: 80,
             droneSpeed: 25,
@@ -800,14 +785,12 @@
             jetPatrolSpeed: 30,
             enemyReactionTime: 0.5,
 
-            // Radar & Targeting
             radarRange: 1000,
             radarPingInterval: 2.0,
             lockRange: 1000,
             autoCannonRange: 300,
             autoCannonPrecision: 0.95,
 
-            // Spawn Settings
             initialEnemyCount: 20,
             chaseDroneInterval: 30.0,
             chaseDroneCount: 2,
@@ -816,14 +799,11 @@
             buildingCountC: 1200,
             treeCount: 6000,
 
-            // Score & Combo
             scoreDrone: 150,
             scoreJet: 300,
             scoreBuilding: 50,
             comboDecayTime: 3,
 
-            // [SAFE TO EXTEND] - Future config sections
-            // Level System Configuration
             levelConfig: {
                 levels: [
                     {
@@ -853,7 +833,6 @@
                 ]
             },
 
-            // HP Configuration for all entities
             hpConfig: {
                 drone: 50,
                 enemyJet: 150,
@@ -861,7 +840,6 @@
                 buildingHeightMultiplier: 0.5
             },
 
-            // HP Bar Configuration
             hpBarConfig: {
                 width: 20,
                 height: 2,
@@ -874,7 +852,6 @@
                 roughness: 0.2
             },
 
-            // Missile lock configuration
             lockConfig: {
                 requireManualLock: true,
                 lockHighlightColor: 0xff0000,
@@ -883,27 +860,19 @@
                 crosshairLockAngle: 0.15 // Cone angle in radians
             },
 
-            // Bullet proximity damage
             bulletProximityDamage: {
                 enabled: true,
                 range: 200,
                 damageMultiplier: 0.5 // 50% damage for near-miss
             },
 
-            // Enemy size multipliers
             enemySizeMultiplier: 2.0,
             droneSpawnWaveInterval: 60.0,
 
-            // === BULLET PROXIMITY DAMAGE BALANCE ===
-            // Reduced by 30% for better gameplay balance
             bulletProximityDamageReduction: 0.7,
 
-            // === BULLET ATTRACTION BALANCE ===
-            // Reduced by 30% for better gameplay balance
             bulletAttractionReduction: 0.7,
 
-            // === ICBM DAMAGE BALANCE ===
-            // Increased by 50% for more powerful strikes
             icbmDamageMultiplier: 1.5,
 
             jetClasses: {
@@ -960,7 +929,6 @@
             icbmAscentTime: 1.0,
             bombGravityMultiplier: 2.5,
 
-            // NEW SYSTEM — AntiDroneSystemV2 Configuration
             antiDrone: {
                 maxTargets: 7,
                 frontalAngle: 70,
@@ -987,43 +955,29 @@
             buildingDamage: { enabled: true, rippleDecay: 2.0 }
         };
 
-        // === APPLY WEAPON SYSTEM BALANCE ADJUSTMENTS ===
-        // Phase 2: Reduce bullet proximity damage by 30%
         CONFIG.bulletProximityDamage.damageMultiplier *= CONFIG.bulletProximityDamageReduction;
 
-        // Phase 3: Reduce bullet attraction range by 30%
         CONFIG.bulletAttractionRange *= CONFIG.bulletAttractionReduction;
 
-        // === MISSILE & WEAPON SPEED ADJUSTMENTS ===
         CONFIG.missileSpeed *= 2.0;
         CONFIG.icbmAscentTime *= 0.7;
 
-        // ================================
-        // GLOBAL GAME STATE
-        // [DO NOT MODIFY] - Centralized state management
-        // [SAFE TO EXTEND] - Add new state categories below
-        // ================================
-
         const State = {
-            // Core Game State
             playing: false,
             score: 0,
             health: 100,
             displayHealth: 100,
             isReversing: false,
 
-            // === GLOBAL TIME ESCALATION SYSTEM ===
             gameTimeSeconds: 0,
             lastSpawnIncreaseMinute: 0,
             lastDifficultyIncreaseBlock: 0,
             difficultyMultiplierHP: 1.0,
             difficultyMultiplierSpeed: 1.0,
 
-            // Combo System
             combo: 1,
             comboTimer: 0,
 
-            // Platform Detection
             platform: {
                 isMobile: false,
                 isTouch: false,
@@ -1032,7 +986,6 @@
                 forceLandscape: false
             },
 
-            // Entity Collections
             enemies: [],
             enemyJets: [],
             bullets: [],
@@ -1042,12 +995,10 @@
             particles: [],
             buildings: [],
 
-            // Weapon State
             missileCount: Infinity,
             icbmCooldown: 0,
             bombCooldown: 0,
 
-            // [SAFE TO EXTEND] - Placeholder for future systems
             currentLevel: 1,
             currentLevelKills: 0,
             totalKills: 0,
@@ -1064,7 +1015,6 @@
             trees: [], // Track tree instances for destruction
             hpBars: [], // Track HP bars for entities
 
-            // Jet Switching System
             currentJetType: 'phantom',
             playerBaseStats: { stored: false },
             friendlyDrones: [],
@@ -1072,17 +1022,11 @@
             timeOfDay: { phase: 0, progress: 0, name: 'sunny', time: 0 },
             weatherZone: 'summer',
 
-            // NEW SYSTEM — AntiDroneSystemV2 State
             antiDroneMissiles: [],
             sonicBooms: [],
             fakeGravBombs: [],
             debrisActive: 0
         };
-
-        // ================================
-        // SYSTEM REGISTRY
-        // [SAFE TO EXTEND] - Register new systems here
-        // ================================
 
         const SystemRegistry = {
             systems: [],
@@ -1110,11 +1054,6 @@
                 }
             }
         };
-
-        // ================================
-        // ASSET FACTORY
-        // [DO NOT MODIFY] - 3D mesh creation
-        // ================================
 
         class AssetFactory {
             static createJetMesh(type = 'phantom') {
@@ -1212,7 +1151,6 @@
                 engineRight.name = 'engineGlow';
                 group.add(engineRight);
 
-                // Navigation lights
                 const navLightL = new THREE.Mesh(
                     new THREE.SphereGeometry(0.15, 6, 6),
                     new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.9 })
@@ -1229,7 +1167,6 @@
                 navLightR.name = 'navLight';
                 group.add(navLightR);
 
-                // Tail strobe
                 const strobe = new THREE.Mesh(
                     new THREE.SphereGeometry(0.12, 6, 6),
                     new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 })
@@ -1238,7 +1175,6 @@
                 strobe.name = 'strobeLight';
                 group.add(strobe);
 
-                // Belly stripe accent
                 const stripe = new THREE.Mesh(
                     new THREE.BoxGeometry(0.3, 0.05, 4),
                     accentMat
@@ -1543,7 +1479,6 @@
                 glowCore.name = 'droneGlowCore';
                 group.add(glowCore);
 
-                // Inner energy sphere
                 const energySphere = new THREE.Mesh(
                     new THREE.SphereGeometry(2.0, 12, 12),
                     new THREE.MeshBasicMaterial({
@@ -1568,7 +1503,6 @@
                 ring2.name = 'rotatingRing2';
                 group.add(ring2);
 
-                // Small orbiting nodes
                 for(let i = 0; i < 4; i++) {
                     const node = new THREE.Mesh(
                         new THREE.SphereGeometry(0.6, 6, 6),
@@ -1584,7 +1518,6 @@
                     group.add(node);
                 }
 
-                // Shield bubble hint
                 const shield = new THREE.Mesh(
                     new THREE.SphereGeometry(10, 16, 16),
                     new THREE.MeshBasicMaterial({
@@ -1632,13 +1565,11 @@
                     color: 0x1a0a0a, roughness: 0.1, metalness: 0.95
                 });
 
-                // Sleeker fuselage
                 const fuselageGeo = new THREE.ConeGeometry(0.55, 6, 8);
                 fuselageGeo.rotateX(Math.PI / 2);
                 const fuselage = new THREE.Mesh(fuselageGeo, bodyMat);
                 group.add(fuselage);
 
-                // Canopy with glass effect
                 const canopyGeo = new THREE.SphereGeometry(0.45, 8, 6);
                 const canopy = new THREE.Mesh(canopyGeo, new THREE.MeshStandardMaterial({
                     color: 0x0a0a0a, roughness: 0.02, metalness: 0.98,
@@ -1648,7 +1579,6 @@
                 canopy.scale.set(1, 0.7, 1.8);
                 group.add(canopy);
 
-                // Delta wings
                 const wingShape = new THREE.Shape();
                 wingShape.moveTo(0, 0);
                 wingShape.lineTo(2.5, -1.2);
@@ -1666,7 +1596,6 @@
                 rightWing.scale.set(-1, 1, 1);
                 group.add(rightWing);
 
-                // Dual vertical stabilizers
                 const tailGeo = new THREE.BoxGeometry(0.08, 1.0, 0.8);
                 const tailL = new THREE.Mesh(tailGeo, bodyMat);
                 tailL.position.set(0.5, 0.5, 2.5);
@@ -1677,7 +1606,6 @@
                 tailR.rotation.z = -Math.PI / 12;
                 group.add(tailR);
 
-                // Twin engines
                 const engineGeo = new THREE.CylinderGeometry(0.22, 0.18, 0.35, 8);
                 engineGeo.rotateX(Math.PI / 2);
                 const engineL = new THREE.Mesh(engineGeo, engineMat);
@@ -1689,7 +1617,6 @@
                 engineR.name = 'engineGlow';
                 group.add(engineR);
 
-                // Hostile glow strip under fuselage
                 const glowStrip = new THREE.Mesh(
                     new THREE.BoxGeometry(0.15, 0.04, 3),
                     accentMat
@@ -1697,7 +1624,6 @@
                 glowStrip.position.set(0, -0.45, 0.5);
                 group.add(glowStrip);
 
-                // Wing tip markers
                 const tipL = new THREE.Mesh(
                     new THREE.SphereGeometry(0.12, 6, 6),
                     new THREE.MeshBasicMaterial({ color: 0xff0000 })
@@ -1864,7 +1790,6 @@
                     color.offsetHSL(0, (Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1);
                     foliageMesh2.setColorAt(i, color);
 
-                    // Track tree for bomb destruction
                     State.trees.push({
                         trunkMesh: trunkMesh,
                         foliageMesh1: foliageMesh1,
@@ -1887,11 +1812,6 @@
                 return group;
             }
         }
-
-        // ================================
-        // SYSTEM: AudioManager
-        // [DO NOT MODIFY] - Web Audio API sound generation
-        // ================================
 
         class AudioManager {
             constructor() {
@@ -1925,7 +1845,6 @@
             }
 
             initMusic() {
-                // Bass layer
                 this.musicOsc = this.ctx.createOscillator();
                 this.musicGain = this.ctx.createGain();
                 this.musicOsc.type = 'triangle';
@@ -1939,7 +1858,6 @@
                 this.musicGain.connect(this.masterGain);
                 this.musicOsc.start();
 
-                // Pad layer (atmospheric)
                 this.padOsc1 = this.ctx.createOscillator();
                 this.padOsc2 = this.ctx.createOscillator();
                 this.padGain = this.ctx.createGain();
@@ -1958,7 +1876,6 @@
                 this.padOsc1.start();
                 this.padOsc2.start();
 
-                // Arpeggio layer
                 this.arpOsc = this.ctx.createOscillator();
                 this.arpGain = this.ctx.createGain();
                 this.arpOsc.type = 'square';
@@ -1984,7 +1901,6 @@
 
                 const t = this.ctx.currentTime;
 
-                // Bass progression (every 2 beats)
                 this.musicTimer += dt;
                 if(this.musicTimer >= 1.5) {
                     this.musicTimer = 0;
@@ -2004,7 +1920,6 @@
                     this.padOsc2.frequency.setTargetAtTime(chord[1], t, 0.3);
                 }
 
-                // Arpeggio (fast notes for intensity)
                 this.arpTimer += dt;
                 if(this.arpTimer >= 0.2) {
                     this.arpTimer = 0;
@@ -2040,13 +1955,11 @@
 
             playExplosion() {
                 const t = this.ctx.currentTime;
-                // Layered explosion: low thump + mid crackle + high sizzle
                 const bufferSize = this.ctx.sampleRate * 0.8;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-                // Low thump
                 const noise1 = this.ctx.createBufferSource();
                 noise1.buffer = buffer;
                 const filter1 = this.ctx.createBiquadFilter();
@@ -2061,7 +1974,6 @@
                 gain1.connect(this.masterGain);
                 noise1.start();
 
-                // Sub bass punch
                 const subOsc = this.ctx.createOscillator();
                 const subGain = this.ctx.createGain();
                 subOsc.type = 'sine';
@@ -2074,7 +1986,6 @@
                 subOsc.start();
                 subOsc.stop(t + 0.5);
 
-                // High crackle
                 const noise2 = this.ctx.createBufferSource();
                 noise2.buffer = buffer;
                 const filter2 = this.ctx.createBiquadFilter();
@@ -2091,7 +2002,6 @@
 
             playBoost() {
                 const t = this.ctx.currentTime;
-                // Afterburner roar
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
@@ -2109,7 +2019,6 @@
                 osc.start();
                 osc.stop(t + 0.6);
 
-                // Sonic boom crack
                 const bufferSize = this.ctx.sampleRate * 0.1;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -2279,7 +2188,6 @@
                 gain.connect(this.masterGain);
                 noise.start();
 
-                // Warning alarm tone
                 const alarm = this.ctx.createOscillator();
                 const alarmGain = this.ctx.createGain();
                 alarm.type = 'sine';
@@ -2301,7 +2209,6 @@
                 const data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-                // Main explosion noise
                 const noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
                 const filter = this.ctx.createBiquadFilter();
@@ -2316,7 +2223,6 @@
                 gain.connect(this.masterGain);
                 noise.start();
 
-                // Metal shatter tone
                 const shatter = this.ctx.createOscillator();
                 const shatterGain = this.ctx.createGain();
                 shatter.type = 'sawtooth';
@@ -2329,7 +2235,6 @@
                 shatter.start();
                 shatter.stop(t + 0.35);
 
-                // Satisfying kill ping
                 const ping = this.ctx.createOscillator();
                 const pingGain = this.ctx.createGain();
                 ping.type = 'sine';
@@ -2343,7 +2248,6 @@
             }
 
             playMissileLock() {
-                // First beep
                 const osc1 = this.ctx.createOscillator();
                 const gain1 = this.ctx.createGain();
                 osc1.type = 'sine';
@@ -2355,7 +2259,6 @@
                 osc1.start();
                 osc1.stop(this.ctx.currentTime + 0.12);
 
-                // Second beep
                 const osc2 = this.ctx.createOscillator();
                 const gain2 = this.ctx.createGain();
                 osc2.type = 'sine';
@@ -2440,7 +2343,6 @@
 
             playLevelComplete() {
                 const t = this.ctx.currentTime;
-                // Triumphant fanfare: 3 ascending notes
                 const notes = [440, 554, 659];
                 notes.forEach((freq, i) => {
                     const osc = this.ctx.createOscillator();
@@ -2455,7 +2357,6 @@
                     osc.stop(t + i * 0.2 + 0.6);
                 });
 
-                // Chord sustain
                 const chord = this.ctx.createOscillator();
                 const chordGain = this.ctx.createGain();
                 chord.type = 'triangle';
@@ -2468,11 +2369,6 @@
                 chord.stop(t + 1.6);
             }
         }
-
-        // ================================
-        // SYSTEM: MissileManager
-        // [CONFIG DRIVEN VALUES ONLY]
-        // ================================
 
         class MissileManager {
             constructor(scene, audio) {
@@ -2551,26 +2447,20 @@
                     const m = State.missiles[i];
                     m.life -= dt;
 
-                    // === ADVANCED MISSILE HOMING UPGRADE ===
-                    // Track locked target or find nearby enemy to attract to
                     let targetPosition = null;
                     let targetVelocity = new THREE.Vector3(0, 0, 0);
 
                     if(m.target && m.target.mesh && m.target.mesh.parent) {
                         targetPosition = m.target.mesh.position;
-                        // Get target velocity for prediction
                         if(m.target.velocity) {
                             targetVelocity = m.target.velocity;
                         }
                     } else {
-                        // MODIFIED — Missile attraction to buildings removed (Phase: Remove Building Attraction Force)
-                        // Missiles only track their locked target, no attraction to nearby entities
                     }
 
                     if(targetPosition) {
                         const dist = m.mesh.position.distanceTo(targetPosition);
 
-                        // Predictive tracking with velocity anticipation
                         const predictionTime = dist / CONFIG.missileSpeed;
                         const predictedTarget = targetPosition.clone().add(targetVelocity.clone().multiplyScalar(predictionTime * 0.7));
 
@@ -2580,13 +2470,11 @@
                         if(toTargetDist > 0.1) {
                             toTarget.normalize();
 
-                            // Progressive tracking boost - stronger as missile gets closer or older
                             const lifePercent = m.life / 8.0;
                             const distanceBoost = dist < 100 ? 2.5 : (dist < 200 ? 1.8 : 1.0);
                             const timeBoost = lifePercent < 0.3 ? 3.0 : (lifePercent < 0.5 ? 2.0 : 1.0);
                             const trackingBoost = distanceBoost * timeBoost;
 
-                            // Aggressive velocity adjustment for perfect tracking
                             const desiredVelocity = toTarget.multiplyScalar(CONFIG.missileSpeed);
                             m.velocity.lerp(desiredVelocity, Math.min(dt * CONFIG.missileTrackingStrength * trackingBoost, 0.95));
                         }
@@ -2675,11 +2563,6 @@
             }
         }
 
-        // ================================
-        // SYSTEM: RadarSystem
-        // [CONFIG DRIVEN VALUES ONLY]
-        // ================================
-
         class RadarSystem {
             constructor() {
                 this.canvas = document.getElementById('radar-canvas');
@@ -2747,13 +2630,11 @@
                         const px = cx + x * scale;
                         const py = cy + z * scale;
 
-                        // Calculate altitude difference
                         const altDiff = e.mesh.position.y - playerPos.y;
                         let color = '#00ff00'; // Same altitude
                         if(altDiff > 50) color = '#ffff00'; // Above
                         if(altDiff < -50) color = '#ff0000'; // Below
 
-                        // Draw direction arrow from center to target
                         ctx.strokeStyle = color;
                         ctx.lineWidth = 1;
                         ctx.globalAlpha = 0.3;
@@ -2763,13 +2644,11 @@
                         ctx.stroke();
                         ctx.globalAlpha = 1.0;
 
-                        // Draw blip
                         ctx.fillStyle = color;
                         ctx.beginPath();
                         ctx.arc(px, py, 4, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Draw distance and altitude info
                         ctx.font = 'bold 9px monospace';
                         ctx.fillStyle = '#ffffff';
                         ctx.strokeStyle = '#000000';
@@ -2795,11 +2674,6 @@
                 ctx.stroke();
             }
         }
-
-        // ================================
-        // SYSTEM: TargetingSystem
-        // [SAFE TO EXTEND]
-        // ================================
 
         class TargetingSystem {
             constructor(scene) {
@@ -2829,23 +2703,19 @@
             }
 
             update3DArrows(enemies, camera) {
-                // Remove old arrows
                 for(let arrow of this.arrow3DObjects) {
                     this.scene.remove(arrow);
                 }
                 this.arrow3DObjects = [];
 
-                // Create new arrows for each enemy
                 enemies.forEach(e => {
                     const arrow = this.create3DArrow();
                     const offset = 15 + (e.mesh.scale.x * 5);
                     arrow.position.copy(e.mesh.position);
                     arrow.position.y += offset;
 
-                    // Make arrow face camera
                     arrow.lookAt(camera.position);
 
-                    // Scale with distance
                     const dist = camera.position.distanceTo(arrow.position);
                     const scale = Math.max(0.5, Math.min(2, dist / 200));
                     arrow.scale.setScalar(scale);
@@ -2858,7 +2728,6 @@
             update(playerPos, playerQuat, enemies, camera) {
                 const allEnemies = [...enemies, ...State.enemyJets];
 
-                // Update 3D arrows
                 this.update3DArrows(allEnemies, camera);
 
                 let hasLeft = false, hasRight = false, hasUp = false, hasDown = false, hasBehind = false;
@@ -2905,11 +2774,6 @@
             }
         }
 
-        // ================================
-        // SYSTEM: EnemyManager
-        // [CONFIG DRIVEN VALUES ONLY]
-        // ================================
-
         class EnemyManager {
             constructor(scene, audio, healthSystem) {
                 this.scene = scene;
@@ -2953,7 +2817,6 @@
                 this.scene.add(jet.mesh);
                 State.enemyJets.push(jet);
 
-                // Register with health system
                 if(this.healthSystem) {
                     jet.hp = this.healthSystem.registerEntity(jet, 'fighterJet');
                 }
@@ -2998,25 +2861,15 @@
                 this.scene.add(enemy.mesh);
                 State.enemies.push(enemy);
 
-                // Register with health system
                 if(this.healthSystem) {
                     enemy.hp = this.healthSystem.registerEntity(enemy, 'drone');
                 }
             }
 
             update(dt) {
-                // Enemy jet updates handled in GameEngine for now
-                // Drone updates handled in GameEngine for now
             }
         }
 
-        // ================================
-        // FEATURE EXTENSION ZONE
-        // [SAFE TO EXTEND] - Add new systems here
-        // [REGISTER NEW SYSTEMS BELOW]
-        // ================================
-
-        // === GLOBAL TIME ESCALATION SYSTEM ===
         class TimeEscalationSystem {
             constructor(scene, audio, enemyManager, healthSystem) {
                 this.scene = scene;
@@ -3030,17 +2883,14 @@
             update(dt) {
                 if(!State.playing) return;
 
-                // Increment game time
                 State.gameTimeSeconds += dt;
 
-                // === MINUTE REINFORCEMENT SYSTEM ===
                 const currentMinute = Math.floor(State.gameTimeSeconds / 60);
                 if(currentMinute > State.lastSpawnIncreaseMinute) {
                     State.lastSpawnIncreaseMinute = currentMinute;
                     this.spawnMinuteReinforcements();
                 }
 
-                // === TIME-BASED DIFFICULTY SCALING ===
                 const currentDifficultyBlock = Math.floor(State.gameTimeSeconds / 120); // Every 2 minutes
                 if(currentDifficultyBlock > State.lastDifficultyIncreaseBlock) {
                     State.lastDifficultyIncreaseBlock = currentDifficultyBlock;
@@ -3049,14 +2899,12 @@
             }
 
             spawnMinuteReinforcements() {
-                // Spawn +4 drones (reduced by spawnRateMultiplier)
                 for(let i = 0; i < Math.max(1, Math.floor(4 * CONFIG.spawnRateMultiplier)); i++) {
                     if(typeof gameEngineRef !== 'undefined' && gameEngineRef) {
                         this.enemyManager.spawnDrone(gameEngineRef.player.position, gameEngineRef.player.quaternion);
                     }
                 }
 
-                // Spawn +2 enemy jets (reduced by spawnRateMultiplier)
                 for(let i = 0; i < Math.max(1, Math.floor(2 * CONFIG.spawnRateMultiplier)); i++) {
                     if(typeof gameEngineRef !== 'undefined' && gameEngineRef) {
                         this.enemyManager.spawnEnemyJet(gameEngineRef.player.position, gameEngineRef.player.quaternion);
@@ -3067,13 +2915,11 @@
             }
 
             applyDifficultyScaling() {
-                // Increase multipliers
                 State.difficultyMultiplierHP *= 1.5;
                 State.difficultyMultiplierSpeed *= 1.3;
 
                 console.log(`[TimeEscalation] 2-Minute Block ${State.lastDifficultyIncreaseBlock}: HP x${State.difficultyMultiplierHP.toFixed(2)}, Speed x${State.difficultyMultiplierSpeed.toFixed(2)}`);
 
-                // Apply to all existing enemies
                 for(let e of State.enemies) {
                     if(this.healthSystem.entities.has(e)) {
                         const health = this.healthSystem.entities.get(e);
@@ -3093,11 +2939,6 @@
                 }
             }
         }
-
-        // ================================
-        // SYSTEM: TimeOfDaySystem
-        // 12-minute day cycle (3 min per phase)
-        // ================================
 
         class TimeOfDaySystem {
             constructor() {
@@ -3271,11 +3112,6 @@
             }
         }
 
-        // ================================
-        // SYSTEM: WeatherZoneSystem
-        // 4 climate quadrants based on X/Z position
-        // ================================
-
         class WeatherZoneSystem {
             constructor() {
                 this.currentZone = 'summer';
@@ -3349,7 +3185,6 @@
             }
         }
 
-        // Platform Detection System - MOBILE SUPPORT
         class PlatformDetectionSystem {
             constructor() {
                 this.detected = false;
@@ -3362,20 +3197,16 @@
             }
 
             detectPlatform() {
-                // Touch capability
                 const hasTouch = ('ontouchstart' in window) ||
                                 (navigator.maxTouchPoints > 0) ||
                                 (navigator.msMaxTouchPoints > 0);
 
-                // Screen width
                 const screenWidth = window.innerWidth;
                 const isMobileWidth = screenWidth <= CONFIG.mobileScreenWidthThreshold;
 
-                // User agent fallback
                 const userAgent = navigator.userAgent.toLowerCase();
                 const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
 
-                // Determine if mobile
                 State.platform.isMobile = (hasTouch && isMobileWidth) || isMobileUA;
                 State.platform.isTouch = hasTouch;
                 State.platform.screenRatio = window.innerWidth / window.innerHeight;
@@ -3385,7 +3216,6 @@
                     document.body.classList.add('mobile');
                     console.log('[PlatformDetection] Mobile device detected');
 
-                    // Update controls hint
                     document.getElementById('controls-text-desktop').style.display = 'none';
                     document.getElementById('controls-text-mobile').style.display = 'block';
                 }
@@ -3426,19 +3256,15 @@
             applyMobileOptimizations() {
                 if(!State.platform.isMobile) return;
 
-                // Apply performance overrides
                 console.log('[PlatformDetection] Applying mobile performance optimizations');
 
-                // These will be checked in GameEngine when spawning/creating
                 State.platform.performanceMode = true;
             }
 
             update(dt) {
-                // Periodic orientation check
             }
         }
 
-        // Mobile Control System - VIRTUAL JOYSTICKS & TOUCH INPUT
         class MobileControlSystem {
             constructor(inputObject) {
                 this.input = inputObject;
@@ -3491,33 +3317,26 @@
                 const leftContainer = document.getElementById('joystick-left');
                 const rightContainer = document.getElementById('joystick-right');
 
-                // Left joystick (Pitch/Yaw)
                 leftContainer.addEventListener('touchstart', (e) => this.onJoystickStart(e, 'left'), { passive: false });
                 leftContainer.addEventListener('touchmove', (e) => this.onJoystickMove(e, 'left'), { passive: false });
                 leftContainer.addEventListener('touchend', (e) => this.onJoystickEnd(e, 'left'), { passive: false });
 
-                // Right joystick (Roll/Throttle)
                 rightContainer.addEventListener('touchstart', (e) => this.onJoystickStart(e, 'right'), { passive: false });
                 rightContainer.addEventListener('touchmove', (e) => this.onJoystickMove(e, 'right'), { passive: false });
                 rightContainer.addEventListener('touchend', (e) => this.onJoystickEnd(e, 'right'), { passive: false });
             }
 
             setupButtons() {
-                // Fire button (removed - using tap anywhere to fire)
 
-                // Missile button with lock system
                 const missileBtn = document.getElementById('btn-missile');
                 missileBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    // Two-stage missile lock system
                     if(State.missileLockStage === 0) {
-                        // First tap: Lock target
                         this.showDebugIndicator('🎯 LOCKING TARGET');
                         this.triggerMissileLock();
                     } else if(State.missileLockStage === 1) {
-                        // Second tap: Fire missile
                         this.showDebugIndicator('🚀 MISSILE FIRED');
                         this.buttons.missile = true;
                         this.vibrate('missileLaunch');
@@ -3529,20 +3348,15 @@
                     this.buttons.missile = false;
                 }, { passive: false });
 
-                // === ICBM LOCK SYSTEM EXTENSION ===
-                // ICBM button - Two-stage lock system (same as missile)
                 const icbmBtn = document.getElementById('btn-icbm');
                 icbmBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    // Two-stage ICBM lock system
                     if(State.icbmLockStage === 0) {
-                        // First tap: Lock target
                         this.showDebugIndicator('🎯 LOCKING ICBM TARGET');
                         this.triggerICBMLock();
                     } else if(State.icbmLockStage === 1) {
-                        // Second tap: Fire ICBM
                         this.showDebugIndicator('💥 ICBM STRIKE');
                         this.buttons.icbm = true;
                         this.vibrate('explosion');
@@ -3554,7 +3368,6 @@
                     this.buttons.icbm = false;
                 }, { passive: false });
 
-                // Bomb button
                 const bombBtn = document.getElementById('btn-bomb');
                 bombBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
@@ -3569,7 +3382,6 @@
                     this.buttons.bomb = false;
                 }, { passive: false });
 
-                // Boost button
                 const boostBtn = document.getElementById('btn-boost');
                 boostBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
@@ -3584,7 +3396,6 @@
                     this.buttons.boost = false;
                 }, { passive: false });
 
-                // Tap anywhere on screen to fire bullets
                 this.setupTapToFire();
             }
 
@@ -3592,7 +3403,6 @@
                 document.addEventListener('touchstart', (e) => {
                     if(!State.playing) return;
 
-                    // Check if touch is on a control element
                     const target = e.target;
                     const isControl = target.closest('.joystick-container') ||
                                      target.closest('.mobile-button') ||
@@ -3622,9 +3432,7 @@
             }
 
             triggerMissileLock() {
-                // Import game engine reference to access missile system
                 if(typeof gameEngineRef !== 'undefined' && gameEngineRef && gameEngineRef.missileSystem) {
-                    // Check if reversing
                     if(State.isReversing) {
                         this.showWarningMessage('CANNOT LOCK - FACE FORWARD');
                         this.showDebugIndicator('⚠️ FACING BACKWARD');
@@ -3632,7 +3440,6 @@
                         return;
                     }
 
-                    // Lock target in crosshair view
                     const target = gameEngineRef.missileSystem.findCrosshairLockTarget(
                         gameEngineRef.player.position,
                         gameEngineRef.player.quaternion,
@@ -3654,10 +3461,8 @@
                 }
             }
 
-            // === ICBM LOCK SYSTEM EXTENSION ===
             triggerICBMLock() {
                 if(typeof gameEngineRef !== 'undefined' && gameEngineRef && gameEngineRef.missileSystem) {
-                    // Check if reversing
                     if(State.isReversing) {
                         this.showWarningMessage('CANNOT LOCK - FACE FORWARD');
                         this.showDebugIndicator('⚠️ FACING BACKWARD');
@@ -3665,7 +3470,6 @@
                         return;
                     }
 
-                    // Lock target in crosshair view
                     const target = gameEngineRef.missileSystem.findCrosshairLockTarget(
                         gameEngineRef.player.position,
                         gameEngineRef.player.quaternion,
@@ -3743,12 +3547,10 @@
                         joystick.currentX = touch.clientX;
                         joystick.currentY = touch.clientY;
 
-                        // Calculate delta
                         const maxDist = CONFIG.joystickSize / 2;
                         let dx = joystick.currentX - joystick.startX;
                         let dy = joystick.currentY - joystick.startY;
 
-                        // Clamp to circle
                         const dist = Math.sqrt(dx * dx + dy * dy);
                         if(dist > maxDist) {
                             const angle = Math.atan2(dy, dx);
@@ -3756,11 +3558,9 @@
                             dy = Math.sin(angle) * maxDist;
                         }
 
-                        // Normalize
                         joystick.deltaX = dx / maxDist;
                         joystick.deltaY = dy / maxDist;
 
-                        // Apply deadzone
                         const deadzone = CONFIG.joystickDeadzone;
                         if(Math.abs(joystick.deltaX) < deadzone) joystick.deltaX = 0;
                         if(Math.abs(joystick.deltaY) < deadzone) joystick.deltaY = 0;
@@ -3810,16 +3610,13 @@
             update(dt) {
                 if(!this.enabled || !State.playing) return;
 
-                // Left joystick controls pitch and yaw
                 const smoothness = CONFIG.joystickSmoothness;
                 this.input.x = THREE.MathUtils.lerp(this.input.x, this.leftJoystick.deltaX, smoothness);
                 this.input.y = THREE.MathUtils.lerp(this.input.y, -this.leftJoystick.deltaY, smoothness);
 
-                // Right joystick controls roll (horizontal) and throttle (vertical)
                 this.input.roll = this.rightJoystick.deltaX > 0 ? -1 : (this.rightJoystick.deltaX < 0 ? 1 : 0);
                 this.input.thrust = -this.rightJoystick.deltaY > 0 ? 1 : (-this.rightJoystick.deltaY < 0 ? -1 : 0);
 
-                // Button states
                 this.input.fire = this.buttons.fire;
                 this.input.missile = this.buttons.missile;
                 this.input.icbm = this.buttons.icbm;
@@ -3828,7 +3625,6 @@
             }
         }
 
-        // Level Management System - FULLY IMPLEMENTED
         class LevelManager {
             constructor(scene, audio) {
                 this.scene = scene;
@@ -3848,7 +3644,6 @@
                     }
                 }
 
-                // Check if level objective complete
                 const levelConfig = CONFIG.levelConfig.levels[this.currentLevelIndex];
                 if(State.currentLevelKills >= levelConfig.objective) {
                     this.completeLevel();
@@ -3858,7 +3653,6 @@
             completeLevel() {
                 if(this.showingTransition) return;
                 if(this.currentLevelIndex >= CONFIG.levelConfig.levels.length - 1) {
-                    // Game complete
                     return;
                 }
 
@@ -3873,8 +3667,6 @@
                 this.showingTransition = true;
                 this.transitionTimer = 3.0;
 
-                // === LEVEL MISSILE RESET EXTENSION ===
-                // Infinite missiles - no reset needed
                 State.missileCount = Infinity;
 
                 const msg = document.getElementById('message-center');
@@ -3917,7 +3709,6 @@
             }
         }
 
-        // Health System - FULLY IMPLEMENTED
         class HealthSystem {
             constructor(scene, audio) {
                 this.scene = scene;
@@ -3933,7 +3724,6 @@
             createHPBar(entity) {
                 const barContainer = new THREE.Group();
 
-                // Metallic border
                 const borderGeo = new THREE.PlaneGeometry(CONFIG.hpBarConfig.width + 0.5, CONFIG.hpBarConfig.height + 0.5);
                 const borderMat = new THREE.MeshStandardMaterial({
                     color: CONFIG.hpBarConfig.borderColor,
@@ -3944,14 +3734,12 @@
                 const border = new THREE.Mesh(borderGeo, borderMat);
                 barContainer.add(border);
 
-                // Background (dark)
                 const bgGeo = new THREE.PlaneGeometry(CONFIG.hpBarConfig.width, CONFIG.hpBarConfig.height);
                 const bgMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
                 const bg = new THREE.Mesh(bgGeo, bgMat);
                 bg.position.z = 0.1;
                 barContainer.add(bg);
 
-                // HP fill
                 const fillGeo = new THREE.PlaneGeometry(CONFIG.hpBarConfig.width, CONFIG.hpBarConfig.height);
                 const fillMat = new THREE.MeshStandardMaterial({
                     color: CONFIG.hpBarConfig.fillColorHigh,
@@ -3966,7 +3754,6 @@
                 fill.name = 'hpFill';
                 barContainer.add(fill);
 
-                // Create canvas for HP text
                 const canvas = document.createElement('canvas');
                 canvas.width = 256;
                 canvas.height = 64;
@@ -4000,7 +3787,6 @@
                 fill.scale.x = hpPercent;
                 fill.position.x = -(CONFIG.hpBarConfig.width * (1 - hpPercent)) / 2;
 
-                // Update color based on HP
                 let color = CONFIG.hpBarConfig.fillColorHigh;
                 if(hpPercent < 0.3) color = CONFIG.hpBarConfig.fillColorLow;
                 else if(hpPercent < 0.6) color = CONFIG.hpBarConfig.fillColorMid;
@@ -4008,7 +3794,6 @@
                 fill.material.color.setHex(color);
                 fill.material.emissive.setHex(color);
 
-                // Update HP text
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 context.font = 'bold 48px Arial';
                 context.fillStyle = '#ffffff';
@@ -4092,24 +3877,19 @@
 
                 const hpPercent = health.currentHP / health.maxHP;
 
-                // Create HP bar on first damage
                 if(!this.hpBars.has(entity)) {
                     this.createHPBar(entity);
                 }
 
-                // Update HP bar
                 this.updateHPBar(entity, hpPercent);
 
-                // Create fire effect when damaged
                 this.createFireEffect(entity);
 
-                // Smoke effect below 40% HP
                 if(hpPercent < 0.4 && !health.smoking) {
                     health.smoking = true;
                     this.createSmokeEffect(entity);
                 }
 
-                // Check if destroyed
                 if(health.currentHP <= 0) {
                     this.onEntityDestroyed(entity, health.type);
                     return true; // Entity destroyed
@@ -4122,7 +3902,6 @@
                 const targetMesh = entity.mesh || entity;
                 if(!targetMesh || !targetMesh.position) return;
 
-                // Create small fire particles
                 for(let i = 0; i < 3; i++) {
                     const geo = new THREE.SphereGeometry(0.5, 4, 4);
                     const mat = new THREE.MeshBasicMaterial({
@@ -4150,7 +3929,6 @@
             }
 
             createSmokeEffect(entity) {
-                // Create smoke particles
                 const smokeMesh = entity.mesh || entity;
                 if(smokeMesh && smokeMesh.position) {
                     this.smokeParticles.push({
@@ -4164,15 +3942,12 @@
             onEntityDestroyed(entity, type) {
                 this.entities.delete(entity);
 
-                // Remove HP bar
                 this.removeHPBar(entity);
 
-                // Remove smoke particles for this entity
                 this.smokeParticles = this.smokeParticles.filter(p => p.target !== (entity.mesh || entity));
             }
 
             update(dt, camera) {
-                // Update smoke particles
                 for(let smoke of this.smokeParticles) {
                     smoke.timer += dt;
                     if(smoke.timer > smoke.rate) {
@@ -4181,7 +3956,6 @@
                     }
                 }
 
-                // Update fire particles
                 for(let i = this.fireParticles.length - 1; i >= 0; i--) {
                     const fire = this.fireParticles[i];
                     fire.life -= dt;
@@ -4195,7 +3969,6 @@
                     }
                 }
 
-                // Update HP bar positions
                 if(camera) {
                     for(let [entity, _] of this.hpBars) {
                         this.positionHPBar(entity, camera);
@@ -4232,11 +4005,6 @@
                 return this.entities.get(entity).maxHP;
             }
         }
-
-        // ================================
-        // SYSTEM: CinematicPostProcessSystem
-        // Chromatic aberration, film grain, vignette, speed blur
-        // ================================
 
         class CinematicPostProcessSystem {
             constructor() {
@@ -4361,11 +4129,6 @@
             }
         }
 
-        // ================================
-        // SYSTEM: WaterSystem
-        // AAA water with vertex displacement, Fresnel, specular
-        // ================================
-
         class WaterSystem {
             constructor() {
                 this.waterMesh = null;
@@ -4483,11 +4246,6 @@
             }
         }
 
-        // ================================
-        // SYSTEM: EnvironmentLightingSystem
-        // PMREM environment lighting (desktop only)
-        // ================================
-
         class EnvironmentLightingSystem {
             constructor() {
                 this.pmrem = null;
@@ -4534,11 +4292,6 @@
                 if (this.pmrem) this.pmrem.dispose();
             }
         }
-
-        // ================================
-        // SYSTEM: VisualUpgradeSystem
-        // Engine glow lights, headlight, dynamic lighting
-        // ================================
 
         class VisualUpgradeSystem {
             constructor() {
@@ -4605,10 +4358,6 @@
             dispose() { this._removeLights(); }
         }
 
-        // ================================
-        // SYSTEM: GraphicsTierSystem
-        // Auto-detect LOW/MEDIUM/HIGH
-        // ================================
         class GraphicsTierSystem {
             constructor() {}
             init() {
@@ -4633,10 +4382,6 @@
             dispose() {}
         }
 
-        // ================================
-        // SYSTEM: FakeLiveWeatherSystem
-        // Single fetch, InstancedMesh snow/rain, max 500
-        // ================================
         class FakeLiveWeatherSystem {
             constructor() {
                 this._mesh = null;
@@ -4714,10 +4459,6 @@
             dispose() { if (this._mesh?.parent) this._mesh.parent.remove(this._mesh); }
         }
 
-        // ================================
-        // SYSTEM: CheapCloudLayerSystem
-        // Inverted sphere + scrolling FBM noise shader
-        // ================================
         class CheapCloudLayerSystem {
             constructor() { this._mesh = null; this._uniforms = null; }
             init() {
@@ -4766,11 +4507,6 @@
             dispose() { if (this._mesh?.parent) this._mesh.parent.remove(this._mesh); }
         }
 
-        // ================================
-        // SYSTEM: SonicBoomSystem
-        // ConeGeometry + additive blending + vertex displacement
-        // Auto-disable on mobile
-        // ================================
         class SonicBoomSystem {
             constructor() { this._booms = []; this._cooldown = 0; this._wasAbove = false; }
             init() {
@@ -4826,11 +4562,6 @@
             dispose() { for (const b of this._booms) { if (b.mesh.parent) b.mesh.parent.remove(b.mesh); } this._booms = []; }
         }
 
-        // ================================
-        // SYSTEM: FakeGravityBombSystem
-        // Black emissive sphere + lerp force + expanding ring
-        // Cap at 10 entities
-        // ================================
         class FakeGravityBombSystem {
             constructor() { this._bombs = []; this._tmpVec = new THREE.Vector3(); }
             init() { console.log('[FakeGravityBomb] System ready (max:', CONFIG.fakeGravityBomb.maxEntities, ')'); }
@@ -4894,11 +4625,6 @@
             dispose() { for (const b of this._bombs) { if(b.sphere?.parent) b.sphere.parent.remove(b.sphere); if(b.ring?.parent) b.ring.parent.remove(b.ring); } this._bombs = []; }
         }
 
-        // ================================
-        // SYSTEM: FakeReflectionSystem
-        // PMREM envmap + CubeCamera cockpit, update every 10 frames
-        // Disable on LOW tier
-        // ================================
         class FakeReflectionSystem {
             constructor() { this._cubeCam = null; this._cubeRT = null; this._frame = 0; }
             init() {
@@ -4927,10 +4653,6 @@
             dispose() { if (this._cubeRT) this._cubeRT.dispose(); }
         }
 
-        // ================================
-        // SYSTEM: LightweightGenerativeAudioSystem
-        // WebAudio oscillators only, frequency+gain control
-        // ================================
         class LightweightGenerativeAudioSystem {
             constructor() { this._droneOsc = null; this._droneGain = null; this._tensionOsc = null; this._tensionGain = null; this._init = false; }
             init() { if (!CONFIG.generativeAudio.enabled) return; console.log('[GenerativeAudio] Ready'); }
@@ -4971,10 +4693,6 @@
             dispose() { try { this._droneOsc?.stop(); this._tensionOsc?.stop(); } catch(e) {} }
         }
 
-        // ================================
-        // SYSTEM: DebrisInstancingSystem
-        // Single InstancedMesh, max 200, auto-clean 10s
-        // ================================
         class DebrisInstancingSystem {
             constructor() { this._mesh = null; this._debris = []; this._dummy = new THREE.Object3D(); this._free = []; }
             init() {
@@ -5034,11 +4752,6 @@
             dispose() { if (this._mesh?.parent) this._mesh.parent.remove(this._mesh); }
         }
 
-        // ================================
-        // SYSTEM: FakeBuildingDamageSystem
-        // Projected decals + vertex displacement ripple visual
-        // Never rebuilds geometry
-        // ================================
         class FakeBuildingDamageSystem {
             constructor() { this._ripples = []; }
             init() {
@@ -5080,18 +4793,11 @@
             dispose() { this._ripples = []; }
         }
 
-        // ================================
-        // CORE ENGINE (DO NOT MODIFY)
-        // ⚠️ DO NOT MODIFY RENDERING, LIGHTING, OR POST-PROCESSING
-        // Add new features via systems above
-        // ================================
-
         class GameEngine {
             constructor() {
                 this.container = document.getElementById('canvas-container');
                 this.scene = new THREE.Scene();
 
-                // [DO NOT MODIFY] Sky shader
                 const skyVertexShader = `
                     varying vec3 vWorldPosition;
                     void main() {
@@ -5145,19 +4851,14 @@
                         vec3 viewDir = normalize(vWorldPosition);
                         float sunDot = max(dot(viewDir, sunDirection), 0.0);
 
-                        // Sun disk
                         float sunDisk = smoothstep(0.997, 0.999, sunDot);
-                        // Sun corona
                         float sunCorona = pow(sunDot, 64.0) * 0.8;
-                        // Atmospheric glow
                         float sunAtmo = pow(sunDot, 8.0) * 0.15;
-                        // Horizon haze
                         float horizonHaze = pow(1.0 - abs(h), 8.0) * 0.3;
 
                         skyColor += sunColor * (sunDisk * 3.0 + sunCorona + sunAtmo);
                         skyColor += vec3(1.0, 0.85, 0.6) * horizonHaze;
 
-                        // Cloud layer
                         if(h > 0.01 && h < 0.5) {
                             vec2 cloudUV = viewDir.xz / (viewDir.y + 0.1) * 0.3;
                             cloudUV += vec2(time * 0.003, time * 0.001);
@@ -5190,34 +4891,28 @@
                 this.skyMesh = new THREE.Mesh(skyGeo, skyMat);
                 this.scene.add(this.skyMesh);
 
-                // [DO NOT MODIFY] Fog
                 this.scene.fog = new THREE.FogExp2(0x8ec8e3, 0.00025);
 
-                // [DO NOT MODIFY] Renderer setup
                 this.camera = new THREE.PerspectiveCamera(CONFIG.fov, window.innerWidth / window.innerHeight, 0.1, 8000);
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-                // Mobile optimization: reduce pixel ratio
                 const maxPixelRatio = State.platform.isMobile ? 1.0 : 1.5;
                 this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
 
                 this.renderer.shadowMap.enabled = true;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-                // [DO NOT MODIFY] Tone mapping
                 this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 this.renderer.toneMappingExposure = 1.25;
                 this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
                 this.container.appendChild(this.renderer.domElement);
 
-                // [DO NOT MODIFY] Post-processing
                 this.composer = new EffectComposer(this.renderer);
                 this.composer.addPass(new RenderPass(this.scene, this.camera));
                 this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
 
-                // Mobile optimization: reduce bloom intensity
                 const bloomStrength = State.platform.isMobile ? CONFIG.mobileOverrides.bloomStrength : 0.6;
                 this.bloomPass.strength = bloomStrength;
                 this.bloomPass.threshold = 0.8;
@@ -5226,7 +4921,6 @@
 
                 this.clock = new THREE.Clock();
 
-                // [SAFE TO EXTEND] System initialization
                 this.audio = new AudioManager();
                 this.healthSystem = new HealthSystem(this.scene, this.audio);
                 this.missileSystem = new MissileManager(this.scene, this.audio);
@@ -5238,14 +4932,11 @@
                 this.timeOfDaySystem = new TimeOfDaySystem();
                 this.weatherZoneSystem = new WeatherZoneSystem();
 
-                // Initialize input object first
                 this.input = { x: 0, y: 0, thrust: 0, roll: 0, fire: false, boost: false, missile: false, icbm: false, bomb: false };
 
-                // Platform detection and mobile controls
                 this.platformDetection = new PlatformDetectionSystem();
                 this.mobileControls = new MobileControlSystem(this.input);
 
-                // [REGISTER NEW SYSTEMS BELOW]
                 SystemRegistry.register(this.platformDetection);
                 SystemRegistry.register(this.mobileControls);
                 SystemRegistry.register(this.audio);
@@ -5285,7 +4976,6 @@
                 }
             }
 
-            // [DO NOT MODIFY] Lighting setup
             setupLights() {
                 const hemiLight = new THREE.HemisphereLight(0xaaccff, 0x445533, 1.0);
                 this.scene.add(hemiLight);
@@ -5297,7 +4987,6 @@
                 this.sunLight.position.set(100, 500, 200);
                 this.sunLight.castShadow = true;
 
-                // Mobile optimization: reduce shadow map size
                 const shadowMapSize = State.platform.isMobile ? CONFIG.mobileOverrides.shadowMapSize : 2048;
                 this.sunLight.shadow.mapSize.width = shadowMapSize;
                 this.sunLight.shadow.mapSize.height = shadowMapSize;
@@ -5363,8 +5052,6 @@
                 plane.receiveShadow = true;
                 this.scene.add(plane);
 
-                // Water body - handled by WaterSystem (initialized after gameEngineRef is set)
-
                 this.cityGroup = AssetFactory.createEnvironment();
                 this.scene.add(this.cityGroup);
             }
@@ -5382,12 +5069,10 @@
             damageBuilding(building, damage) {
                 if(building.destroyed) return;
 
-                // Register building with health system if not already registered
                 if(!this.healthSystem.entities.has(building)) {
                     this.healthSystem.registerEntity(building, 'building');
                 }
 
-                // Apply damage through health system
                 const destroyed = this.healthSystem.applyDamage(building, damage);
 
                 if(destroyed) {
@@ -5431,7 +5116,6 @@
                 tree.foliageMesh1.instanceMatrix.needsUpdate = true;
                 tree.foliageMesh2.instanceMatrix.needsUpdate = true;
 
-                // Create grey smoke animation
                 this.createGreySmoke(tree.position, tree.scale);
             }
 
@@ -5475,7 +5159,6 @@
                 this.updateHUD();
             }
 
-            // === ICBM LOCK SYSTEM EXTENSION ===
             fireICBM() {
                 if(State.icbmCooldown > 0) return;
 
@@ -5489,13 +5172,10 @@
                     velocity: new THREE.Vector3(0, 300, 0)
                 };
 
-                // Determine target: locked drone or ground position
                 if(State.icbmLockedTarget && State.icbmLockedTarget.mesh && State.icbmLockedTarget.mesh.parent) {
-                    // Target locked drone position
                     icbm.targetGround = State.icbmLockedTarget.mesh.position.clone();
                     icbm.targetGround.y = 0;
                 } else {
-                    // Fallback to original forward-targeting behavior
                     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.quaternion);
                     forward.y = 0;
                     forward.normalize();
@@ -5511,7 +5191,6 @@
                 this.vibrate('missileLaunch');
                 State.icbmCooldown = CONFIG.icbmCooldownTime;
 
-                // Reset ICBM lock state after firing
                 State.icbmLockedTarget = null;
                 State.icbmLockStage = 0;
             }
@@ -5588,13 +5267,11 @@
             setupEvents() {
                 document.addEventListener('mousemove', (e) => {
                     if (!State.playing) return;
-                    // Desktop only input
                     if(State.platform.isMobile) return;
                     this.input.x = (e.clientX / window.innerWidth) * 2 - 1;
                     this.input.y = -(e.clientY / window.innerHeight) * 2 + 1;
                 });
                 document.addEventListener('keydown', (e) => {
-                    // Desktop only input
                     if(State.platform.isMobile) return;
                     if(e.code === 'KeyW') this.input.thrust = 1;
                     if(e.code === 'KeyS') this.input.thrust = -1;
@@ -5605,14 +5282,11 @@
                         this.missileSystem.autoMode = !this.missileSystem.autoMode;
                     }
                     if(e.code === 'KeyF') {
-                        // Manual missile lock system (2-click) - CROSSHAIR BASED
                         if(State.missileLockStage === 0) {
-                            // Check if reversing
                             if(State.isReversing) {
                                 this.showWarningMessage('CANNOT LOCK - FACE FORWARD');
                                 return;
                             }
-                            // First click: Lock target in crosshair view
                             const target = this.missileSystem.findCrosshairLockTarget(
                                 this.player.position,
                                 this.player.quaternion,
@@ -5627,7 +5301,6 @@
                                 this.showWarningMessage('NO TARGET IN CROSSHAIR');
                             }
                         } else if(State.missileLockStage === 1) {
-                            // Second click: Fire missile
                             if(State.isReversing) {
                                 this.showWarningMessage('CANNOT FIRE - FACE FORWARD');
                                 return;
@@ -5644,7 +5317,6 @@
                         }
                     }
 
-                    // NEW SYSTEM — Z key triggers AntiDroneSystemV2
                     if(e.code === 'KeyZ') {
                         if(window._antiDroneSystemV2) {
                             window._antiDroneSystemV2.activate(this);
@@ -5657,8 +5329,6 @@
                     if(e.key === '4') switchJet('nova');
                     if(e.key === '5') switchJet('oblivion');
 
-                    // === ICBM LOCK SYSTEM EXTENSION ===
-                    // Key R: Lock target for ICBM (same as missile lock behavior)
                     if(e.code === 'KeyR') {
                         if(State.isReversing) {
                             this.showWarningMessage('CANNOT LOCK - FACE FORWARD');
@@ -5680,7 +5350,6 @@
                     }
                 });
                 document.addEventListener('keyup', (e) => {
-                    // Desktop only input
                     if(State.platform.isMobile) return;
                     if(e.code === 'KeyW' || e.code === 'KeyS') this.input.thrust = 0;
                     if(e.code === 'KeyA' || e.code === 'KeyD') this.input.roll = 0;
@@ -5689,21 +5358,17 @@
                     if(e.code === 'KeyU') this.input.bomb = false;
                 });
                 document.addEventListener('mousedown', (e) => {
-                    // Desktop only input
                     if(State.platform.isMobile) return;
                     if(State.playing) {
                         if(e.button === 0) {
-                            // First click: fire bullets
                             this.input.fire = true;
                         }
                         if(e.button === 2) {
-                            // Right click: ICBM
                             this.input.icbm = true;
                         }
                     }
                 });
                 document.addEventListener('mouseup', (e) => {
-                    // Desktop only input
                     if(State.platform.isMobile) return;
                     if(e.button === 0) this.input.fire = false;
                     if(e.button === 2) this.input.icbm = false;
@@ -5715,7 +5380,6 @@
                     document.getElementById('hud').style.display = 'block';
                     State.playing = true;
 
-                    // Reset time escalation state on new game
                     State.gameTimeSeconds = 0;
                     State.lastSpawnIncreaseMinute = 0;
                     State.lastDifficultyIncreaseBlock = 0;
@@ -5805,13 +5469,9 @@
                 this.vibrate('lightHit');
             }
 
-            // === UNIQUE EXPLOSION VFX SYSTEM ===
-
-            // 🔫 BULLET IMPACT - Sharp white flash, metallic spark burst (ENHANCED)
             createBulletImpactExplosion(position) {
                 const size = 15;
 
-                // Sharp white flash core
                 const flashCore = new THREE.Mesh(
                     new THREE.SphereGeometry(0.8, 8, 8),
                     new THREE.MeshBasicMaterial({
@@ -5831,7 +5491,6 @@
                     smokeLifetime: 0.15
                 });
 
-                // Metallic spark burst (more sparks, faster)
                 for(let i = 0; i < 20; i++) {
                     const geo = new THREE.SphereGeometry(0.2 + Math.random() * 0.3, 4, 4);
                     const mat = new THREE.MeshBasicMaterial({
@@ -5859,7 +5518,6 @@
                     });
                 }
 
-                // Enhanced smoke puffs (multiple layers)
                 for(let i = 0; i < 3; i++) {
                     setTimeout(() => {
                         const smokePuff = new THREE.Mesh(
@@ -5889,7 +5547,6 @@
                     }, i * 50);
                 }
 
-                // Brief light flash
                 const light = new THREE.PointLight(0xffff00, 20, 30);
                 light.position.copy(position);
                 this.scene.add(light);
@@ -5901,12 +5558,9 @@
                 this.audio.playExplosion();
                 this.vibrate('lightHit');
 
-                // MODIFIED — Camera shake removed (Phase: Global Shake Removal)
             }
 
-            // 🚀 MISSILE EXPLOSION - Orange fire core, red shockwave, dark grey smoke (ENHANCED)
             createMissileExplosion(position, radius = 50) {
-                // Bright explosive core
                 const explosiveCore = new THREE.Mesh(
                     new THREE.SphereGeometry(radius * 0.15, 12, 12),
                     new THREE.MeshBasicMaterial({
@@ -5926,7 +5580,6 @@
                     smokeLifetime: 0.3
                 });
 
-                // Enhanced orange/red fire core (more fireballs)
                 for(let i = 0; i < 35; i++) {
                     const geo = new THREE.SphereGeometry(radius * (0.04 + Math.random() * 0.04), 8, 8);
                     const mat = new THREE.MeshBasicMaterial({
@@ -5954,7 +5607,6 @@
                     });
                 }
 
-                // Expanding red shockwave (faster, more intense)
                 const shockwave = new THREE.Mesh(
                     new THREE.RingGeometry(radius * 0.05, radius * 0.1, 32),
                     new THREE.MeshBasicMaterial({
@@ -5982,7 +5634,6 @@
                     }, 20);
                 }, 0);
 
-                // Enhanced dark grey smoke with more volume
                 for(let i = 0; i < 25; i++) {
                     setTimeout(() => {
                         const geo = new THREE.SphereGeometry(radius * (0.05 + Math.random() * 0.03), 8, 8);
@@ -6012,7 +5663,6 @@
                     }, i * 25);
                 }
 
-                // Ember particles for heat distortion effect
                 for(let i = 0; i < 15; i++) {
                     const ember = new THREE.Mesh(
                         new THREE.SphereGeometry(0.3, 4, 4),
@@ -6041,7 +5691,6 @@
                     });
                 }
 
-                // Bright explosive light
                 const light = new THREE.PointLight(0xff6600, radius * 3, radius * 4);
                 light.position.copy(position);
                 this.scene.add(light);
@@ -6059,12 +5708,9 @@
                 this.audio.playExplosion();
                 this.vibrate('explosion');
 
-                // MODIFIED — Camera shake removed (Phase: Global Shake Removal)
             }
 
-            // ☢️ ICBM EXPLOSION - Cyan core, purple shockwave, black+violet smoke
             createICBMExplosion(position, radius = 200) {
-                // Massive bright cyan core
                 for(let i = 0; i < 40; i++) {
                     const geo = new THREE.SphereGeometry(radius * 0.08, 6, 6);
                     const mat = new THREE.MeshBasicMaterial({
@@ -6092,7 +5738,6 @@
                     });
                 }
 
-                // Purple energy shockwave ring
                 const shockwave = new THREE.Mesh(
                     new THREE.RingGeometry(radius * 0.1, radius * 0.15, 32),
                     new THREE.MeshBasicMaterial({
@@ -6120,7 +5765,6 @@
                     }, 30);
                 }, 0);
 
-                // Thick black + violet smoke column
                 for(let i = 0; i < 50; i++) {
                     setTimeout(() => {
                         const geo = new THREE.SphereGeometry(radius * 0.08, 8, 8);
@@ -6150,7 +5794,6 @@
                     }, i * 35);
                 }
 
-                // Bright light flash
                 const light = new THREE.PointLight(0x00ffff, radius * 4, radius * 5);
                 light.position.copy(position);
                 this.scene.add(light);
@@ -6167,12 +5810,9 @@
 
                 this.audio.playExplosion();
                 this.vibrate('explosion');
-                // No camera shake for ICBM (Phase 5)
             }
 
-            // 💣 GRAVITY BOMB EXPLOSION - Dark red center, brown smoke, debris
             createBombExplosion(position, radius = 120) {
-                // Dark red center
                 for(let i = 0; i < 30; i++) {
                     const geo = new THREE.SphereGeometry(radius * 0.06, 6, 6);
                     const mat = new THREE.MeshBasicMaterial({
@@ -6200,7 +5840,6 @@
                     });
                 }
 
-                // Heavy dust cloud (brown smoke)
                 for(let i = 0; i < 35; i++) {
                     setTimeout(() => {
                         const geo = new THREE.SphereGeometry(radius * 0.07, 8, 8);
@@ -6230,7 +5869,6 @@
                     }, i * 35);
                 }
 
-                // Debris particles
                 const debrisCount = radius;
                 const geometry = new THREE.BufferGeometry();
                 const positions = new Float32Array(debrisCount * 3);
@@ -6262,7 +5900,6 @@
                     smokeLifetime: 1.5
                 });
 
-                // Low orange glow
                 const light = new THREE.PointLight(0xaa4400, radius * 2, radius * 3);
                 light.position.copy(position);
                 this.scene.add(light);
@@ -6279,10 +5916,8 @@
 
                 this.audio.playExplosion();
                 this.vibrate('explosion');
-                // No camera shake for Bomb (Phase 5)
             }
 
-            // Legacy explosion function (kept for backward compatibility)
             createExplosion(position, size = 30) {
                 const particleCount = size;
                 const geometry = new THREE.BufferGeometry();
@@ -6312,12 +5947,9 @@
                 this.audio.playExplosion();
                 this.vibrate('explosion');
 
-                // MODIFIED — Camera shake removed (Phase: Global Shake Removal)
             }
 
-            // === REMOVE HEAVY EXPLOSION CAMERA SHAKE ===
             createEpicExplosion(position, radius, skipCameraShake = false) {
-                // Phase 1: Shockwave ring
                 const shockwave = new THREE.Mesh(
                     new THREE.RingGeometry(radius * 0.1, radius * 0.15, 32),
                     new THREE.MeshBasicMaterial({
@@ -6345,7 +5977,6 @@
                     }, 30);
                 }, 0);
 
-                // Phase 2: Fireball
                 for(let i = 0; i < radius; i++) {
                     const geo = new THREE.SphereGeometry(radius * 0.1, 6, 6);
                     const mat = new THREE.MeshBasicMaterial({
@@ -6371,7 +6002,6 @@
                     });
                 }
 
-                // Phase 3: Debris
                 const debrisCount = radius * 2;
                 const geometry = new THREE.BufferGeometry();
                 const positions = new Float32Array(debrisCount * 3);
@@ -6397,7 +6027,6 @@
                 this.scene.add(debris);
                 State.particles.push({ mesh: debris, velocities: velocities, life: 1.5 });
 
-                // Phase 4: Smoke plume
                 for(let i = 0; i < 30; i++) {
                     setTimeout(() => {
                         const geo = new THREE.SphereGeometry(radius * 0.08, 8, 8);
@@ -6424,7 +6053,6 @@
                     }, i * 40);
                 }
 
-                // Phase 5: Light flash
                 const light = new THREE.PointLight(0xff6600, radius * 3, radius * 4);
                 light.position.copy(position);
                 this.scene.add(light);
@@ -6442,7 +6070,6 @@
                 this.audio.playExplosion();
                 this.vibrate('explosion');
 
-                // MODIFIED — Camera shake removed (Phase: Global Shake Removal)
             }
 
             hitMarker() {
@@ -6464,7 +6091,6 @@
 
                 this.vibrate('damage');
 
-                // Screen flash overlay effect
                 const canvas = this.renderer.domElement;
                 canvas.style.filter = 'brightness(1.5) saturate(0.5)';
                 setTimeout(() => { canvas.style.filter = 'none'; }, 80);
@@ -6485,7 +6111,6 @@
                 }, 1500);
             }
 
-            // [CONFIG DRIVEN VALUES ONLY]
             updatePhysics(dt) {
                 const deadzone = 0.05;
                 const inputX = Math.abs(this.input.x) < deadzone ? 0 : this.input.x;
@@ -6519,7 +6144,6 @@
                 this.boostActive = this.input.boost;
                 if(this.input.boost) {
                     targetSpeed = CONFIG.jetSpeedMax * CONFIG.boostMultiplier;
-                    // MODIFIED — Boost camera shake removed (Phase: Global Shake Removal)
                     State.isReversing = false;
                 }
 
@@ -6562,9 +6186,6 @@
 
                 offset.applyQuaternion(this.player.quaternion);
                 const targetPos = new THREE.Vector3().copy(this.player.position).add(offset);
-
-                // MODIFIED — Camera shake update removed (Phase: Global Shake Removal)
-                // cameraShake object preserved but no longer affects camera
 
                 this.camera.position.lerp(targetPos, dt * 4);
 
@@ -6652,7 +6273,6 @@
                 if(State.icbmCooldown > 0) State.icbmCooldown -= dt;
                 if(State.bombCooldown > 0) State.bombCooldown -= dt;
 
-                // Spawn chase drones every 30 seconds
                 State.chaseDroneTimer += dt;
                 if(State.chaseDroneTimer >= CONFIG.chaseDroneInterval) {
                     State.chaseDroneTimer = 0;
@@ -6674,13 +6294,10 @@
                             this.audio.playICBMDive();
                         }
                     } else if(icbm.phase === 'dive') {
-                        // === ICBM LOCK SYSTEM EXTENSION ===
-                        // Track locked target if still alive
                         let targetPos = icbm.targetGround;
                         if(icbm.lockedTarget && icbm.lockedTarget.mesh && icbm.lockedTarget.mesh.parent) {
                             targetPos = icbm.lockedTarget.mesh.position.clone();
                             targetPos.y = 0;
-                            // Update target position for continuous tracking
                             icbm.targetGround = targetPos;
                         }
 
@@ -6691,7 +6308,6 @@
                         icbm.mesh.lookAt(targetPos);
 
                         if(icbm.mesh.position.y <= 5) {
-                            // ICBM explosion with unique VFX
                             this.createICBMExplosion(icbm.mesh.position, CONFIG.icbmExplosionRadius);
 
                             const hits = this.checkWeaponCollisions(icbm.mesh.position, CONFIG.icbmExplosionRadius, true);
@@ -6699,8 +6315,6 @@
                             hits.enemies.sort((a, b) => b - a);
                             for(let idx of hits.enemies) {
                                 const e = State.enemies[idx];
-                                // === ICBM DAMAGE BALANCE ===
-                                // Apply 1.5x damage multiplier for ICBM
                                 this.healthSystem.applyDamage(e, 999 * CONFIG.icbmDamageMultiplier); // Enhanced damage
                                 this.scene.remove(e.mesh);
                                 State.enemies.splice(idx, 1);
@@ -6714,7 +6328,6 @@
                             hits.enemyJets.sort((a, b) => b - a);
                             for(let idx of hits.enemyJets) {
                                 const jet = State.enemyJets[idx];
-                                // === ICBM DAMAGE BALANCE ===
                                 this.healthSystem.applyDamage(jet, 999 * CONFIG.icbmDamageMultiplier); // Enhanced damage
                                 this.scene.remove(jet.mesh);
                                 State.enemyJets.splice(idx, 1);
@@ -6752,7 +6365,6 @@
                     bomb.mesh.rotation.z += bomb.rotationVel.z * dt;
 
                     if(bomb.mesh.position.y <= 5 || bomb.life <= 0) {
-                        // Bomb explosion with unique VFX
                         this.createBombExplosion(bomb.mesh.position, CONFIG.bombExplosionRadius);
 
                         const hits = this.checkWeaponCollisions(bomb.mesh.position, CONFIG.bombExplosionRadius);
@@ -6799,9 +6411,6 @@
 
                 for(let i = State.bullets.length - 1; i >= 0; i--) {
                     const b = State.bullets[i];
-
-                    // MODIFIED — Building attraction removed (Phase: Remove Building Attraction Force)
-                    // Bullets now travel only toward intended targets, no magnetic/attraction logic
 
                     b.mesh.position.addScaledVector(b.velocity, dt);
                     b.life -= dt;
@@ -6901,7 +6510,6 @@
                         const b = State.bullets[j];
                         if(b.mesh.position.distanceToSquared(e.mesh.position) < 100) {
                             if(this.tempBox.containsPoint(b.mesh.position)) {
-                                // Apply damage via HealthSystem
                                 const destroyed = this.healthSystem.applyDamage(e, CONFIG.bulletDamage);
 
                                 this.scene.remove(b.mesh);
@@ -6935,11 +6543,9 @@
                     for(let j = State.missiles.length - 1; j >= 0; j--) {
                         const m = State.missiles[j];
                         if(m.mesh.position.distanceTo(e.mesh.position) < 15) {
-                            // Missile hit - create explosion with area damage
                             const explosionPos = e.mesh.position.clone();
                             this.createMissileExplosion(explosionPos, CONFIG.missileExplosionRadius);
 
-                            // Apply direct damage to hit enemy
                             const destroyed = this.healthSystem.applyDamage(e, CONFIG.missileDamage);
 
                             this.scene.remove(m.mesh);
@@ -6965,13 +6571,11 @@
                                 this.spawnEnemy();
                             }
 
-                            // Area damage to nearby enemies within explosion radius
                             for(let k = State.enemies.length - 1; k >= 0; k--) {
                                 if(k === i && destroyed) continue; // Skip if directly hit enemy was destroyed
                                 const nearbyEnemy = State.enemies[k];
                                 const distToExplosion = nearbyEnemy.mesh.position.distanceTo(explosionPos);
                                 if(distToExplosion < CONFIG.missileExplosionRadius && distToExplosion > 5) {
-                                    // Area damage falloff based on distance
                                     const damageRatio = 1.0 - (distToExplosion / CONFIG.missileExplosionRadius);
                                     const areaDamage = CONFIG.missileDamage * damageRatio * 0.6;
                                     const areaDestroyed = this.healthSystem.applyDamage(nearbyEnemy, areaDamage);
@@ -6987,7 +6591,6 @@
                                 }
                             }
 
-                            // Area damage to enemy jets
                             for(let k = State.enemyJets.length - 1; k >= 0; k--) {
                                 const nearbyJet = State.enemyJets[k];
                                 const distToExplosion = nearbyJet.mesh.position.distanceTo(explosionPos);
@@ -7098,7 +6701,6 @@
                     for(let j = State.bullets.length - 1; j >= 0; j--) {
                         const b = State.bullets[j];
                         if(b.mesh.position.distanceTo(jet.mesh.position) < 5) {
-                            // Apply damage via HealthSystem
                             const destroyed = this.healthSystem.applyDamage(jet, CONFIG.bulletDamage);
 
                             this.scene.remove(b.mesh);
@@ -7133,11 +6735,9 @@
                     for(let j = State.missiles.length - 1; j >= 0; j--) {
                         const m = State.missiles[j];
                         if(m.mesh.position.distanceTo(jet.mesh.position) < 15) {
-                            // Missile hit - create explosion with area damage
                             const explosionPos = jet.mesh.position.clone();
                             this.createMissileExplosion(explosionPos, CONFIG.missileExplosionRadius);
 
-                            // Apply damage via HealthSystem (missiles do CONFIG damage)
                             const destroyed = this.healthSystem.applyDamage(jet, CONFIG.missileDamage);
 
                             this.scene.remove(m.mesh);
@@ -7162,7 +6762,6 @@
                                 this.updateHUD();
                                 this.spawnEnemy();
                             }
-                            // Area damage to nearby enemies within explosion radius
                             for(let k = State.enemies.length - 1; k >= 0; k--) {
                                 const nearbyEnemy = State.enemies[k];
                                 const distToExplosion = nearbyEnemy.mesh.position.distanceTo(explosionPos);
@@ -7182,7 +6781,6 @@
                                 }
                             }
 
-                            // Area damage to other enemy jets
                             for(let k = State.enemyJets.length - 1; k >= 0; k--) {
                                 if(k === i && destroyed) continue; // Skip if directly hit jet was destroyed
                                 const nearbyJet = State.enemyJets[k];
@@ -7223,43 +6821,32 @@
                     }
                 }
 
-                // === TIMED SMOKE SYSTEM & VFX POLISH PASS ===
                 for(let i = State.particles.length - 1; i >= 0; i--) {
                     const p = State.particles[i];
                     p.life -= dt;
 
                     if(p.isRing) {
-                        // Handle smoke rings
                         p.age += dt;
                         const progress = p.age / 0.8;
                         const currentRadius = THREE.MathUtils.lerp(p.startRadius, p.endRadius, progress);
 
-                        // Update ring geometry
                         p.mesh.geometry.dispose();
                         p.mesh.geometry = new THREE.RingGeometry(currentRadius, currentRadius + 0.1, 16);
 
-                        // Billboard effect - face camera
                         p.mesh.lookAt(this.camera.position);
 
-                        // Fade out
                         p.mesh.material.opacity = p.life / 0.8;
                     } else if(p.isSmoke) {
-                        // === TIMED SMOKE PERSISTENCE SYSTEM ===
-                        // Smoke fades smoothly with non-linear curve
                         const smokeLifetime = p.smokeLifetime || 1.0;
                         const lifeProgress = p.life / smokeLifetime;
 
-                        // Non-linear fade (ease-out cubic)
                         const fadeProgress = 1 - Math.pow(1 - lifeProgress, 3);
                         p.mesh.material.opacity = lifeProgress * 0.7;
 
-                        // Scale outward while fading
                         const scaleProgress = 1 + (1 - lifeProgress) * 2;
                         p.mesh.scale.setScalar(scaleProgress);
                     } else {
-                        // Regular particles - additive blending for fire cores
                         if(p.weaponType === 'missile' || p.weaponType === 'icbm' || p.weaponType === 'bomb') {
-                            // Fire particles with slight emissive pulsing
                             const pulse = 0.8 + Math.sin(Date.now() * 0.01) * 0.2;
                             p.mesh.material.opacity = (p.life / (p.smokeLifetime || 1.0)) * pulse;
                         } else {
@@ -7295,21 +6882,18 @@
                     this.targetingSystem.showLock(false);
                 }
 
-                // Manual missile lock system
                 if(this.input.missile && State.missileLockStage === 1 && State.missileLockedTarget && this.missileSystem.cooldown <= 0 && !State.isReversing) {
                     const missilePos = this.player.position.clone();
                     const missileVel = new THREE.Vector3(0, 0, -200).applyQuaternion(this.player.quaternion);
                     this.missileSystem.lockTarget = State.missileLockedTarget;
                     this.missileSystem.createMissile(missilePos, this.player.quaternion, missileVel);
 
-                    // Reset lock state
                     State.missileLockStage = 0;
                     State.missileLockedTarget = null;
                     this.targetingSystem.showLock(false);
                     this.input.missile = false;
                 }
 
-                // Auto missile mode (legacy, disabled by default)
                 if(this.missileSystem.autoMode && this.missileSystem.lockTarget && this.missileSystem.cooldown <= 0 && !State.isReversing) {
                     const missilePos = this.player.position.clone();
                     const missileVel = new THREE.Vector3(0, 0, -200).applyQuaternion(this.player.quaternion);
@@ -7345,32 +6929,21 @@
                 }
             }
 
-            // ================================
-            // MAIN GAME LOOP
-            // [DO NOT MODIFY] - Clean system-driven architecture
-            // ================================
-
             loop() {
                 const dt = Math.min(this.clock.getDelta(), 0.1);
 
                 if (State.playing) {
-                    // Core physics and camera
                     this.updatePhysics(dt);
                     this.updateCamera(dt);
 
-                    // Entity updates
                     this.updateEntities(dt);
 
-                    // System updates (uses SystemRegistry)
                     SystemRegistry.updateAll(dt);
 
-                    // Health system needs camera for HP bars
                     this.healthSystem.update(dt, this.camera);
 
-                    // HUD
                     this.updateHUD();
 
-                    // Weapon inputs
                     const shouldAutoFire = this.autoCannonEnabled && this.checkAutoCannonAssist();
 
                     if((this.input.fire || shouldAutoFire) && this.clock.elapsedTime - this.lastShotTime > CONFIG.fireRate) {
@@ -7399,12 +6972,10 @@
                     this.camera.lookAt(0, 50, 0);
                 }
 
-                // Update sky time
                 if(this.skyMesh && this.skyMesh.material.uniforms.time) {
                     this.skyMesh.material.uniforms.time.value = this.clock.elapsedTime;
                 }
 
-                // Update contrails
                 if(this.contrailTimer !== undefined && State.playing) {
                     this.contrailTimer += 0.016;
                     if(this.contrailTimer > 0.03) {
@@ -7417,7 +6988,6 @@
             }
         }
 
-        // Global reference for mobile controls
         let gameEngineRef = null;
 
         function switchJet(type) {
@@ -7637,12 +7207,6 @@
                 }
             }
         }
-
-        // ================================
-        // NEW SYSTEM — AntiDroneSystemV2
-        // Weapons/AntiDroneSystemV2
-        // Fires 7 guaranteed-hit missiles at frontal-arc drones
-        // ================================
 
         class AntiDroneSystemV2 {
             constructor() {
@@ -8056,7 +7620,6 @@
             _detonateMissile(m, index, engine) {
                 const pos = m.position.clone();
 
-                // MODIFIED — Micro ICBM Effect
                 const exp = this._acquireExplosion();
                 exp.position.copy(pos);
                 exp.userData.active = true;
@@ -8139,7 +7702,6 @@
             const jetClassSystem = new JetClassSystem();
             SystemRegistry.register(jetClassSystem);
 
-            // NEW SYSTEM — Register AntiDroneSystemV2
             const antiDroneSystemV2 = new AntiDroneSystemV2();
             window._antiDroneSystemV2 = antiDroneSystemV2;
             SystemRegistry.register(antiDroneSystemV2);
@@ -8195,7 +7757,6 @@
                 btn.addEventListener('touchstart', handler, { passive: false });
             });
 
-            // NEW SYSTEM — Wire mobile anti-drone button
             const antiDroneBtn = document.getElementById('btn-antidrone');
             if (antiDroneBtn) {
                 const adHandler = (e) => {
@@ -8213,6 +7774,5 @@
         };
 
     </script>
-
 
 </body></html>
