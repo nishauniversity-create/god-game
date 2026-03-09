@@ -771,14 +771,10 @@
             missileCooldown: 2.0,
             missileSpeed: 500,
             missileTrackingStrength: 5,
-            missileTurnRate: 2.2,
             missileAttractionRange: 120,
             missileAttractionStrength: 600,
             missileDamage: 500,
             missileExplosionRadius: 50,
-            missileReloadEnabled: true,
-            missileReloadInterval: 4.0,
-            missileReloadAmount: 1,
             icbmCooldownTime: 5.0,
             icbmExplosionRadius: 200,
             bombCooldownTime: 1.0,
@@ -864,7 +860,7 @@
                 lockHighlightColor: 0xff0000,
                 lockPulseSpeed: 2.0,
                 crosshairLockRange: 1500,
-                crosshairLockAngle: 0.26 // Cone angle in radians
+                crosshairLockAngle: 0.15 // Cone angle in radians
             },
 
             bulletProximityDamage: {
@@ -1009,7 +1005,7 @@
             particles: [],
             buildings: [],
 
-            missileCount: CONFIG.missileStartCount,
+            missileCount: Infinity,
             icbmCooldown: 0,
             bombCooldown: 0,
 
@@ -1040,7 +1036,6 @@
             sonicBooms: [],
             fakeGravBombs: [],
             debrisActive: 0,
-            missileReloadTimer: 0,
             aiTickAccumulator: 0,
             hudDt: 1/60
         };
@@ -2492,14 +2487,8 @@
                             const timeBoost = lifePercent < 0.3 ? 3.0 : (lifePercent < 0.5 ? 2.0 : 1.0);
                             const trackingBoost = distanceBoost * timeBoost;
 
-                            // BUG FIX #9 – limit homing turn rate for believable missile steering.
                             const desiredVelocity = toTarget.multiplyScalar(CONFIG.missileSpeed);
-                            const currentDir = m.velocity.clone().normalize();
-                            const desiredDir = desiredVelocity.clone().normalize();
-                            const steer = Math.min(dt * CONFIG.missileTurnRate, 1.0);
-                            const blendedDir = currentDir.lerp(desiredDir, steer).normalize();
-                            const speedMag = THREE.MathUtils.lerp(m.velocity.length(), CONFIG.missileSpeed, Math.min(dt * CONFIG.missileTrackingStrength * trackingBoost, 0.9));
-                            m.velocity.copy(blendedDir.multiplyScalar(speedMag));
+                            m.velocity.lerp(desiredVelocity, Math.min(dt * CONFIG.missileTrackingStrength * trackingBoost, 0.95));
                         }
 
                         m.mesh.lookAt(predictedTarget);
@@ -2561,29 +2550,28 @@
             }
 
             findCrosshairLockTarget(playerPos, playerQuat, enemies) {
-                // BUG FIX #6 – wider and more reliable lock cone using dot threshold + distance weighting.
-                let best = null;
-                let bestScore = -Infinity;
+                let closest = null;
+                let minAngle = CONFIG.lockConfig.crosshairLockAngle;
 
                 const allEnemies = [...enemies, ...State.enemyJets];
-                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat).normalize();
-                const minDot = Math.cos(CONFIG.lockConfig.crosshairLockAngle);
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat);
 
                 for(const e of allEnemies) {
                     const toEnemy = new THREE.Vector3().subVectors(e.mesh.position, playerPos);
                     const dist = toEnemy.length();
-                    if(dist >= CONFIG.lockConfig.crosshairLockRange) continue;
-                    toEnemy.normalize();
-                    const dot = THREE.MathUtils.clamp(forward.dot(toEnemy), -1, 1);
-                    if(dot < minDot) continue;
-                    const score = dot - (dist / CONFIG.lockConfig.crosshairLockRange) * 0.25;
-                    if(score > bestScore) {
-                        bestScore = score;
-                        best = e;
+
+                    if(dist < CONFIG.lockConfig.crosshairLockRange) {
+                        toEnemy.normalize();
+                        const angle = Math.acos(forward.dot(toEnemy));
+
+                        if(angle < minAngle) {
+                            minAngle = angle;
+                            closest = e;
+                        }
                     }
                 }
 
-                return best;
+                return closest;
             }
         }
 
@@ -3699,7 +3687,7 @@
                 this.showingTransition = true;
                 this.transitionTimer = 3.0;
 
-                State.missileCount = CONFIG.missileStartCount;
+                State.missileCount = Infinity;
 
                 const msg = document.getElementById('message-center');
                 msg.innerText = `LEVEL ${State.currentLevel} COMPLETE`;
@@ -6330,14 +6318,6 @@
                 State.aiTickAccumulator += dt;
                 const runAiTick = State.aiTickAccumulator >= CONFIG.aiTickInterval;
                 if(runAiTick) State.aiTickAccumulator = 0;
-
-                if(CONFIG.missileReloadEnabled && State.missileCount !== Infinity) {
-                    State.missileReloadTimer += dt;
-                    if(State.missileReloadTimer >= CONFIG.missileReloadInterval) {
-                        State.missileCount += CONFIG.missileReloadAmount;
-                        State.missileReloadTimer = 0;
-                    }
-                }
 
                 State.chaseDroneTimer += dt;
                 if(State.chaseDroneTimer >= CONFIG.chaseDroneInterval) {
