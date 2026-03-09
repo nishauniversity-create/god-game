@@ -760,18 +760,25 @@
 
             bulletDamage: 25,
             bulletSpeed: 1600,
-            bulletLifetime: 2,
+            bulletLifetime: 3,
+            bulletMaxDistance: 4200,
             fireRate: 0.12,
             bulletAttractionRange: 100,
             bulletAttractionStrength: 200,
+            bulletCollisionRadius: 8,
+            bulletAimAssistFalloff: 1.4,
             missileStartCount: 30,
             missileCooldown: 2.0,
             missileSpeed: 500,
             missileTrackingStrength: 5,
+            missileTurnRate: 2.2,
             missileAttractionRange: 120,
             missileAttractionStrength: 600,
             missileDamage: 500,
             missileExplosionRadius: 50,
+            missileReloadEnabled: true,
+            missileReloadInterval: 4.0,
+            missileReloadAmount: 1,
             icbmCooldownTime: 5.0,
             icbmExplosionRadius: 200,
             bombCooldownTime: 1.0,
@@ -857,7 +864,7 @@
                 lockHighlightColor: 0xff0000,
                 lockPulseSpeed: 2.0,
                 crosshairLockRange: 1500,
-                crosshairLockAngle: 0.15 // Cone angle in radians
+                crosshairLockAngle: 0.26 // Cone angle in radians
             },
 
             bulletProximityDamage: {
@@ -926,6 +933,13 @@
             },
 
             spawnRateMultiplier: 0.7,
+            maxEnemies: 48,
+            aiTickInterval: 0.08,
+            enemySeparationRadius: 20,
+            enemySeparationStrength: 16,
+            enemyReactionTimeMultiplier: 0.75,
+            radarMaxTargets: 18,
+            particleHardLimit: 1800,
             icbmAscentTime: 1.0,
             bombGravityMultiplier: 2.5,
 
@@ -995,7 +1009,7 @@
             particles: [],
             buildings: [],
 
-            missileCount: Infinity,
+            missileCount: CONFIG.missileStartCount,
             icbmCooldown: 0,
             bombCooldown: 0,
 
@@ -1025,7 +1039,10 @@
             antiDroneMissiles: [],
             sonicBooms: [],
             fakeGravBombs: [],
-            debrisActive: 0
+            debrisActive: 0,
+            missileReloadTimer: 0,
+            aiTickAccumulator: 0,
+            hudDt: 1/60
         };
 
         const SystemRegistry = {
@@ -2475,8 +2492,14 @@
                             const timeBoost = lifePercent < 0.3 ? 3.0 : (lifePercent < 0.5 ? 2.0 : 1.0);
                             const trackingBoost = distanceBoost * timeBoost;
 
+                            // BUG FIX #9 – limit homing turn rate for believable missile steering.
                             const desiredVelocity = toTarget.multiplyScalar(CONFIG.missileSpeed);
-                            m.velocity.lerp(desiredVelocity, Math.min(dt * CONFIG.missileTrackingStrength * trackingBoost, 0.95));
+                            const currentDir = m.velocity.clone().normalize();
+                            const desiredDir = desiredVelocity.clone().normalize();
+                            const steer = Math.min(dt * CONFIG.missileTurnRate, 1.0);
+                            const blendedDir = currentDir.lerp(desiredDir, steer).normalize();
+                            const speedMag = THREE.MathUtils.lerp(m.velocity.length(), CONFIG.missileSpeed, Math.min(dt * CONFIG.missileTrackingStrength * trackingBoost, 0.9));
+                            m.velocity.copy(blendedDir.multiplyScalar(speedMag));
                         }
 
                         m.mesh.lookAt(predictedTarget);
@@ -2538,28 +2561,29 @@
             }
 
             findCrosshairLockTarget(playerPos, playerQuat, enemies) {
-                let closest = null;
-                let minAngle = CONFIG.lockConfig.crosshairLockAngle;
+                // BUG FIX #6 – wider and more reliable lock cone using dot threshold + distance weighting.
+                let best = null;
+                let bestScore = -Infinity;
 
                 const allEnemies = [...enemies, ...State.enemyJets];
-                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat);
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat).normalize();
+                const minDot = Math.cos(CONFIG.lockConfig.crosshairLockAngle);
 
                 for(const e of allEnemies) {
                     const toEnemy = new THREE.Vector3().subVectors(e.mesh.position, playerPos);
                     const dist = toEnemy.length();
-
-                    if(dist < CONFIG.lockConfig.crosshairLockRange) {
-                        toEnemy.normalize();
-                        const angle = Math.acos(forward.dot(toEnemy));
-
-                        if(angle < minAngle) {
-                            minAngle = angle;
-                            closest = e;
-                        }
+                    if(dist >= CONFIG.lockConfig.crosshairLockRange) continue;
+                    toEnemy.normalize();
+                    const dot = THREE.MathUtils.clamp(forward.dot(toEnemy), -1, 1);
+                    if(dot < minDot) continue;
+                    const score = dot - (dist / CONFIG.lockConfig.crosshairLockRange) * 0.25;
+                    if(score > bestScore) {
+                        bestScore = score;
+                        best = e;
                     }
                 }
 
-                return closest;
+                return best;
             }
         }
 
@@ -2614,7 +2638,11 @@
                 ctx.arc(cx, cy, 3, 0, Math.PI * 2);
                 ctx.fill();
 
-                const allEnemies = [...enemies, ...State.enemyJets];
+                const allEnemies = [...enemies, ...State.enemyJets]
+                    .map(e => ({ e, d: e.mesh.position.distanceToSquared(playerPos) }))
+                    .sort((a, b) => a.d - b.d)
+                    .slice(0, CONFIG.radarMaxTargets)
+                    .map(item => item.e);
 
                 allEnemies.forEach(e => {
                     const rel = new THREE.Vector3().subVectors(e.mesh.position, playerPos);
@@ -2790,7 +2818,7 @@
                     type: 'enemyJet',
                     velocity: new THREE.Vector3(),
                     fireTimer: Math.random() * 3,
-                    reactionTime: CONFIG.enemyReactionTime,
+                    reactionTime: CONFIG.enemyReactionTime * CONFIG.enemyReactionTimeMultiplier,
                     patrolMode: Math.random() > 0.3,
                     patrolPoint: null,
                     patrolTimer: 0,
@@ -2815,6 +2843,8 @@
                 }
 
                 this.scene.add(jet.mesh);
+                const jetBounds = new THREE.Box3().setFromObject(jet.mesh);
+                jet.hitRadius = jetBounds.getBoundingSphere(new THREE.Sphere()).radius * 0.35;
                 State.enemyJets.push(jet);
 
                 if(this.healthSystem) {
@@ -2859,6 +2889,8 @@
                 }
 
                 this.scene.add(enemy.mesh);
+                const enemyBounds = new THREE.Box3().setFromObject(enemy.mesh);
+                enemy.hitRadius = enemyBounds.getBoundingSphere(new THREE.Sphere()).radius * 0.38;
                 State.enemies.push(enemy);
 
                 if(this.healthSystem) {
@@ -3667,7 +3699,7 @@
                 this.showingTransition = true;
                 this.transitionTimer = 3.0;
 
-                State.missileCount = Infinity;
+                State.missileCount = CONFIG.missileStartCount;
 
                 const msg = document.getElementById('message-center');
                 msg.innerText = `LEVEL ${State.currentLevel} COMPLETE`;
@@ -5148,6 +5180,7 @@
             }
 
             spawnEnemy() {
+                if((State.enemies.length + State.enemyJets.length) >= CONFIG.maxEnemies) return;
                 const roll = Math.random();
 
                 if(roll < 0.3) {
@@ -5424,49 +5457,69 @@
             }
 
             fireBullet() {
-                const bulletMat = new THREE.MeshBasicMaterial({
-                    color: 0xffee44,
-                    transparent: true,
-                    opacity: 0.95
-                });
-                const tracerMat = new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    transparent: true,
-                    opacity: 0.6
-                });
+                // BUG FIX #7 – Converge projectile path with crosshair ray instead of pure jet forward.
+                const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffee44, transparent: true, opacity: 0.95 });
+                const tracerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
                 const bulletGeo = new THREE.BoxGeometry(0.25, 0.25, 3.5);
                 const bullet = new THREE.Group();
-                const core = new THREE.Mesh(bulletGeo, bulletMat);
-                bullet.add(core);
-                const glow = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 4.5), tracerMat);
-                bullet.add(glow);
+                bullet.add(new THREE.Mesh(bulletGeo, bulletMat));
+                bullet.add(new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 4.5), tracerMat));
 
-                const left = bullet.clone();
-                const center = bullet.clone();
-                const right = bullet.clone();
+                const forward = new THREE.Vector3();
+                this.camera.getWorldDirection(forward).normalize();
+                const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.quaternion);
+                const aimDir = playerForward.lerp(forward, 0.85).normalize();
 
-                const offsetL = new THREE.Vector3(-1.8, -0.2, -1).applyQuaternion(this.player.quaternion);
-                const offsetC = new THREE.Vector3(0, -0.2, -1).applyQuaternion(this.player.quaternion);
-                const offsetR = new THREE.Vector3(1.8, -0.2, -1).applyQuaternion(this.player.quaternion);
+                const offsets = [
+                    new THREE.Vector3(-1.8, -0.2, -1),
+                    new THREE.Vector3(0, -0.2, -1),
+                    new THREE.Vector3(1.8, -0.2, -1)
+                ];
 
-                left.position.copy(this.player.position).add(offsetL);
-                center.position.copy(this.player.position).add(offsetC);
-                right.position.copy(this.player.position).add(offsetR);
+                offsets.forEach(offset => {
+                    const proj = bullet.clone();
+                    const worldOffset = offset.applyQuaternion(this.player.quaternion);
+                    proj.position.copy(this.player.position).add(worldOffset);
+                    proj.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), aimDir);
+                    this.scene.add(proj);
 
-                left.quaternion.copy(this.player.quaternion);
-                center.quaternion.copy(this.player.quaternion);
-                right.quaternion.copy(this.player.quaternion);
+                    // BUG FIX #4 – stronger configurable aim assist close to crosshair targets.
+                    const assistedDir = this.applyBulletAimAssist(proj.position, aimDir.clone());
+                    const velocity = assistedDir.multiplyScalar(CONFIG.bulletSpeed).add(this.velocity);
+                    State.bullets.push({
+                        mesh: proj,
+                        velocity,
+                        life: CONFIG.bulletLifetime,
+                        traveled: 0,
+                        prevPos: proj.position.clone(),
+                        hitRadius: CONFIG.bulletCollisionRadius
+                    });
+                });
 
-                this.scene.add(left);
-                this.scene.add(center);
-                this.scene.add(right);
-
-                const velocity = new THREE.Vector3(0, 0, -CONFIG.bulletSpeed).applyQuaternion(this.player.quaternion).add(this.velocity);
-                State.bullets.push({ mesh: left, velocity: velocity.clone(), life: CONFIG.bulletLifetime });
-                State.bullets.push({ mesh: center, velocity: velocity.clone(), life: CONFIG.bulletLifetime });
-                State.bullets.push({ mesh: right, velocity: velocity.clone(), life: CONFIG.bulletLifetime });
                 this.audio.playBulletFire();
                 this.vibrate('lightHit');
+            }
+
+
+            applyBulletAimAssist(origin, direction) {
+                const allEnemies = [...State.enemies, ...State.enemyJets];
+                let bestTarget = null;
+                let bestScore = -Infinity;
+                for(const e of allEnemies) {
+                    const toEnemy = new THREE.Vector3().subVectors(e.mesh.position, origin);
+                    const dist = toEnemy.length();
+                    if(dist > CONFIG.bulletAttractionRange) continue;
+                    toEnemy.normalize();
+                    const align = direction.dot(toEnemy);
+                    if(align <= 0.65) continue;
+                    const score = align - (dist / CONFIG.bulletAttractionRange) * 0.3;
+                    if(score > bestScore) { bestScore = score; bestTarget = e; }
+                }
+                if(!bestTarget) return direction;
+                const desired = new THREE.Vector3().subVectors(bestTarget.mesh.position, origin).normalize();
+                const dist = bestTarget.mesh.position.distanceTo(origin);
+                const assist = THREE.MathUtils.clamp((1.0 - dist / CONFIG.bulletAttractionRange) ** CONFIG.bulletAimAssistFalloff, 0, 1);
+                return direction.lerp(desired, assist * 0.55).normalize();
             }
 
             createBulletImpactExplosion(position) {
@@ -6273,6 +6326,19 @@
                 if(State.icbmCooldown > 0) State.icbmCooldown -= dt;
                 if(State.bombCooldown > 0) State.bombCooldown -= dt;
 
+                // PERFORMANCE FIX – AI throttled tick cadence and missile reload pacing.
+                State.aiTickAccumulator += dt;
+                const runAiTick = State.aiTickAccumulator >= CONFIG.aiTickInterval;
+                if(runAiTick) State.aiTickAccumulator = 0;
+
+                if(CONFIG.missileReloadEnabled && State.missileCount !== Infinity) {
+                    State.missileReloadTimer += dt;
+                    if(State.missileReloadTimer >= CONFIG.missileReloadInterval) {
+                        State.missileCount += CONFIG.missileReloadAmount;
+                        State.missileReloadTimer = 0;
+                    }
+                }
+
                 State.chaseDroneTimer += dt;
                 if(State.chaseDroneTimer >= CONFIG.chaseDroneInterval) {
                     State.chaseDroneTimer = 0;
@@ -6411,23 +6477,73 @@
 
                 for(let i = State.bullets.length - 1; i >= 0; i--) {
                     const b = State.bullets[i];
+                    if(!b.prevPos) b.prevPos = b.mesh.position.clone();
+                    b.prevPos.copy(b.mesh.position);
 
                     b.mesh.position.addScaledVector(b.velocity, dt);
                     b.life -= dt;
+                    b.traveled = (b.traveled || 0) + b.velocity.length() * dt;
 
+                    let consumed = false;
                     for(let building of State.buildings) {
-                        if(!building.destroyed) {
-                            const distToBuilding = b.mesh.position.distanceTo(building.position);
-                            if(distToBuilding < building.width * 2) {
-                                this.damageBuilding(building, CONFIG.bulletDamage);
-                                this.scene.remove(b.mesh);
-                                State.bullets.splice(i, 1);
+                        if(building.destroyed) continue;
+                        const distToBuilding = b.mesh.position.distanceTo(building.position);
+                        if(distToBuilding < building.width * 2) {
+                            this.damageBuilding(building, CONFIG.bulletDamage);
+                            consumed = true;
+                            break;
+                        }
+                    }
+
+                    if(!consumed) {
+                        // BUG FIX #1/#2/#3/#8 – CCD swept-sphere hit registration for high-speed bullets.
+                        const seg = new THREE.Vector3().subVectors(b.mesh.position, b.prevPos);
+                        const segLenSq = Math.max(seg.lengthSq(), 0.0001);
+                        const hitRadius = b.hitRadius || CONFIG.bulletCollisionRadius;
+                        const allTargets = [...State.enemies, ...State.enemyJets];
+                        for(const target of allTargets) {
+                            const enemyRadius = target.hitRadius || (target.type === 'enemyJet' ? 9 : 7);
+                            if(target.mesh.position.distanceToSquared(b.mesh.position) > (260 * 260)) continue; // PERFORMANCE FIX – broadphase filter
+                            const toCenter = new THREE.Vector3().subVectors(target.mesh.position, b.prevPos);
+                            const t = THREE.MathUtils.clamp(toCenter.dot(seg) / segLenSq, 0, 1);
+                            const closest = b.prevPos.clone().addScaledVector(seg, t);
+                            const dist = closest.distanceTo(target.mesh.position);
+                            if(dist <= (hitRadius + enemyRadius)) {
+                                const destroyed = this.healthSystem.applyDamage(target, CONFIG.bulletDamage);
+                                this.hitMarker();
+                                consumed = true;
+                                if(destroyed) {
+                                    this.audio.playEnemyDestruction();
+                                    if(target.type === 'enemyJet') this.createExplosion(target.mesh.position, 50);
+                                    else this.createBulletImpactExplosion(target.mesh.position);
+                                    this.scene.remove(target.mesh);
+                                    if(target.type === 'enemyJet') {
+                                        const idx = State.enemyJets.indexOf(target);
+                                        if(idx >= 0) State.enemyJets.splice(idx, 1);
+                                        State.score += CONFIG.scoreJet * (State.combo + 1);
+                                    } else {
+                                        const idx = State.enemies.indexOf(target);
+                                        if(idx >= 0) State.enemies.splice(idx, 1);
+                                        State.score += CONFIG.scoreDrone * (State.combo + 1);
+                                    }
+                                    State.combo += 1;
+                                    State.comboTimer = CONFIG.comboDecayTime;
+                                    State.currentLevelKills++;
+                                    State.totalKills++;
+                                    const comboEl = document.getElementById('combo-display');
+                                    comboEl.innerText = `COMBO x${State.combo}`;
+                                    comboEl.style.opacity = 1;
+                                    this.spawnEnemy();
+                                }
                                 break;
                             }
                         }
                     }
 
-                    if(b.life <= 0) { this.scene.remove(b.mesh); State.bullets.splice(i, 1); }
+                    if(consumed || b.life <= 0 || b.traveled >= CONFIG.bulletMaxDistance) {
+                        this.scene.remove(b.mesh);
+                        State.bullets.splice(i, 1);
+                    }
                 }
 
                 for(let i = State.enemies.length - 1; i >= 0; i--) {
@@ -6483,12 +6599,26 @@
                         }
                     }
 
-                    const dir = new THREE.Vector3().subVectors(targetPos, e.mesh.position).normalize();
+                    if(runAiTick || !e.desiredDir) {
+                        // AI IMPROVEMENT – separation steering to reduce enemy stacking.
+                        const pursuitDir = new THREE.Vector3().subVectors(targetPos, e.mesh.position).normalize();
+                        const sep = new THREE.Vector3();
+                        for(const other of State.enemies) {
+                            if(other === e) continue;
+                            const diff = new THREE.Vector3().subVectors(e.mesh.position, other.mesh.position);
+                            const d = diff.length();
+                            if(d > 0.001 && d < CONFIG.enemySeparationRadius) {
+                                sep.add(diff.normalize().multiplyScalar((CONFIG.enemySeparationRadius - d) / CONFIG.enemySeparationRadius));
+                            }
+                        }
+                        pursuitDir.addScaledVector(sep, CONFIG.enemySeparationStrength / 20).normalize();
+                        e.desiredDir = pursuitDir;
+                    }
 
                     const baseSpeed = e.patrolMode ? CONFIG.droneSpeed - 5 : (e.type === 'kamikaze' ? CONFIG.droneSpeedKamikaze : CONFIG.droneSpeed);
                     const speed = baseSpeed * e.speedFactor; // Apply speed multiplier from difficulty scaling
-                    e.mesh.position.addScaledVector(dir, speed * dt);
-                    e.mesh.lookAt(targetPos);
+                    e.mesh.position.addScaledVector(e.desiredDir, speed * dt);
+                    if(runAiTick) e.mesh.lookAt(targetPos);
 
                     const distToPlayer = e.mesh.position.distanceTo(this.player.position);
                     if(distToPlayer < 10) {
@@ -6506,39 +6636,7 @@
 
                     this.tempBox.setFromObject(e.mesh);
 
-                    for(let j = State.bullets.length - 1; j >= 0; j--) {
-                        const b = State.bullets[j];
-                        if(b.mesh.position.distanceToSquared(e.mesh.position) < 100) {
-                            if(this.tempBox.containsPoint(b.mesh.position)) {
-                                const destroyed = this.healthSystem.applyDamage(e, CONFIG.bulletDamage);
-
-                                this.scene.remove(b.mesh);
-                                State.bullets.splice(j, 1);
-                                this.hitMarker();
-
-                                if(destroyed) {
-                                    this.createBulletImpactExplosion(e.mesh.position);
-                                    this.audio.playEnemyDestruction();
-                                    this.scene.remove(e.mesh);
-                                    State.enemies.splice(i, 1);
-
-                                    State.combo++;
-                                    State.comboTimer = CONFIG.comboDecayTime;
-                                    State.score += CONFIG.scoreDrone * State.combo;
-                                    State.currentLevelKills++;
-                                    State.totalKills++;
-
-                                    const comboEl = document.getElementById('combo-display');
-                                    comboEl.innerText = `COMBO x${State.combo}`;
-                                    comboEl.style.opacity = 1;
-
-                                    this.updateHUD();
-                                    this.spawnEnemy();
-                                }
-                                break;
-                            }
-                        }
-                    }
+                    // BUG FIX #1/#2/#3/#8 – bullet collision is handled in centralized CCD pass above.
 
                     for(let j = State.missiles.length - 1; j >= 0; j--) {
                         const m = State.missiles[j];
@@ -6698,38 +6796,7 @@
                     }
 
                     let hit = false;
-                    for(let j = State.bullets.length - 1; j >= 0; j--) {
-                        const b = State.bullets[j];
-                        if(b.mesh.position.distanceTo(jet.mesh.position) < 5) {
-                            const destroyed = this.healthSystem.applyDamage(jet, CONFIG.bulletDamage);
-
-                            this.scene.remove(b.mesh);
-                            State.bullets.splice(j, 1);
-                            this.hitMarker();
-
-                            if(destroyed) {
-                                this.audio.playEnemyDestruction();
-                                this.createExplosion(jet.mesh.position, 50);
-                                this.scene.remove(jet.mesh);
-                                State.enemyJets.splice(i, 1);
-
-                                State.combo++;
-                                State.comboTimer = CONFIG.comboDecayTime;
-                                State.score += CONFIG.scoreJet * State.combo;
-                                State.currentLevelKills++;
-                                State.totalKills++;
-
-                                const comboEl = document.getElementById('combo-display');
-                                comboEl.innerText = `COMBO x${State.combo}`;
-                                comboEl.style.opacity = 1;
-
-                                this.updateHUD();
-                                this.spawnEnemy();
-                                hit = true;
-                                break;
-                            }
-                        }
-                    }
+                    // BUG FIX #1/#2/#3/#8 – bullet collision is handled in centralized CCD pass above.
                     if(hit) continue;
 
                     for(let j = State.missiles.length - 1; j >= 0; j--) {
@@ -6869,6 +6936,14 @@
                     if(p.life <= 0) { this.scene.remove(p.mesh); State.particles.splice(i, 1); }
                 }
 
+                if(State.particles.length > CONFIG.particleHardLimit) {
+                    const overflow = State.particles.length - CONFIG.particleHardLimit;
+                    for(let n = 0; n < overflow; n++) {
+                        const oldP = State.particles.shift();
+                        if(oldP?.mesh) this.scene.remove(oldP.mesh);
+                    }
+                }
+
                 this.missileSystem.lockTarget = this.missileSystem.findLockTarget(this.player.position, State.enemies);
 
                 if(this.missileSystem.lockTarget) {
@@ -6917,7 +6992,8 @@
 
                 const fill = document.getElementById('health-fill');
                 const container = document.getElementById('health-bar-container');
-                State.displayHealth = THREE.MathUtils.lerp(State.displayHealth, State.health, 0.1);
+                // BUG FIX #10 – frame-rate independent health bar smoothing.
+                State.displayHealth = THREE.MathUtils.lerp(State.displayHealth, State.health, THREE.MathUtils.clamp(State.hudDt * 8, 0.05, 0.35));
                 fill.style.width = `${State.displayHealth}%`;
 
                 if(State.health < 30) {
@@ -6931,6 +7007,7 @@
 
             loop() {
                 const dt = Math.min(this.clock.getDelta(), 0.1);
+                State.hudDt = dt;
 
                 if (State.playing) {
                     this.updatePhysics(dt);
