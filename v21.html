@@ -4949,23 +4949,51 @@
                 this.composer.addPass(this.bloomPass);
 
                 // Modular rendering/world systems (chunk streaming + terrain + atmosphere + GPU particles).
-                this.advancedLighting = new AdvancedLightingSystem(this.renderer, this.scene);
-                this.advancedLighting.init();
-                this.terrainSystem = new ProceduralTerrainSystem(this.scene, { viewRadius: State.platform.isMobile ? 1 : 2 });
-                this.worldObjects = new InstancedWorldObjects(this.scene, { maxInstances: State.platform.isMobile ? 1600 : 3800 });
-                this.chunkManager = new WorldChunkManager({
-                    chunkSize: this.terrainSystem.options.chunkSize,
-                    range: this.terrainSystem.options.viewRadius,
-                    onChunkEnter: (cx, cz) => this.worldObjects.spawnChunk(cx, cz, this.terrainSystem.options.chunkSize, (x, z) => this.terrainSystem._height(x, z)),
-                    onChunkLeave: (cx, cz) => this.worldObjects.despawnChunk(cx, cz)
-                });
-                this.atmosphereSystem = new AtmosphereSystem(this.scene);
-                this.atmosphereSystem.init();
-                this.oceanSystem = new OceanSystem(this.scene);
-                this.oceanSystem.init();
-                this.gpuParticles = new GpuParticleSystem(this.scene, State.platform.isMobile ? 700 : 1800);
-                this.jetModelSystem = new JetModelSystem();
-                this.renderDebugPanel = new RenderDebugPanel(this.renderer);
+                // Guard each system so gameplay remains available even when a graphics feature fails on some devices.
+                this.advancedLighting = null;
+                this.terrainSystem = null;
+                this.worldObjects = null;
+                this.chunkManager = null;
+                this.atmosphereSystem = null;
+                this.oceanSystem = null;
+                this.gpuParticles = null;
+                this.jetModelSystem = null;
+                this.renderDebugPanel = null;
+
+                try {
+                    this.advancedLighting = new AdvancedLightingSystem(this.renderer, this.scene);
+                    this.advancedLighting.init();
+                } catch (e) { console.warn('[Graphics] AdvancedLightingSystem disabled:', e); }
+
+                try {
+                    this.terrainSystem = new ProceduralTerrainSystem(this.scene, { viewRadius: State.platform.isMobile ? 1 : 2 });
+                    this.worldObjects = new InstancedWorldObjects(this.scene, { maxInstances: State.platform.isMobile ? 1600 : 3800 });
+                    this.chunkManager = new WorldChunkManager({
+                        chunkSize: this.terrainSystem.options.chunkSize,
+                        range: this.terrainSystem.options.viewRadius,
+                        onChunkEnter: (cx, cz) => this.worldObjects?.spawnChunk(cx, cz, this.terrainSystem.options.chunkSize, (x, z) => this.terrainSystem._height(x, z)),
+                        onChunkLeave: (cx, cz) => this.worldObjects?.despawnChunk(cx, cz)
+                    });
+                } catch (e) { console.warn('[Graphics] Terrain/Chunk systems disabled:', e); this.terrainSystem = null; this.chunkManager = null; }
+
+                try {
+                    this.atmosphereSystem = new AtmosphereSystem(this.scene);
+                    this.atmosphereSystem.init();
+                } catch (e) { console.warn('[Graphics] AtmosphereSystem disabled:', e); }
+
+                try {
+                    this.oceanSystem = new OceanSystem(this.scene);
+                    this.oceanSystem.init();
+                } catch (e) { console.warn('[Graphics] OceanSystem disabled:', e); }
+
+                try { this.gpuParticles = new GpuParticleSystem(this.scene, State.platform.isMobile ? 700 : 1800); }
+                catch (e) { console.warn('[Graphics] GpuParticleSystem disabled:', e); }
+
+                try { this.jetModelSystem = new JetModelSystem(); }
+                catch (e) { console.warn('[Graphics] JetModelSystem disabled:', e); }
+
+                try { this.renderDebugPanel = new RenderDebugPanel(this.renderer); }
+                catch (e) { console.warn('[Graphics] RenderDebugPanel disabled:', e); }
 
                 this.clock = new THREE.Clock();
 
@@ -5094,8 +5122,8 @@
 
                 // Keep legacy material for compatibility, but world floor now comes from streamed terrain chunks.
                 this.terrainLegacyMaterial = groundMat;
-                this.terrainSystem.update(new THREE.Vector3(0, 0, 0));
-                this.chunkManager.update(new THREE.Vector3(0, 0, 0));
+                if (this.terrainSystem) this.terrainSystem.update(new THREE.Vector3(0, 0, 0));
+                if (this.chunkManager) this.chunkManager.update(new THREE.Vector3(0, 0, 0));
 
                 this.cityGroup = AssetFactory.createEnvironment();
                 this.scene.add(this.cityGroup);
@@ -5111,12 +5139,14 @@
                 this.speed = CONFIG.jetSpeedMin;
 
                 // Non-blocking GLTF replacement with fallback to procedural jets.
-                this.jetModelSystem.loadJet(State.currentJetType, (type) => AssetFactory.createJetMesh(type)).then((model) => {
-                    if (!model || !this.player) return;
-                    if (this.jetMesh?.parent === this.player) this.player.remove(this.jetMesh);
-                    this.jetMesh = model;
-                    this.player.add(this.jetMesh);
-                });
+                if (this.jetModelSystem) {
+                    this.jetModelSystem.loadJet(State.currentJetType, (type) => AssetFactory.createJetMesh(type)).then((model) => {
+                        if (!model || !this.player) return;
+                        if (this.jetMesh?.parent === this.player) this.player.remove(this.jetMesh);
+                        this.jetMesh = model;
+                        this.player.add(this.jetMesh);
+                    });
+                }
             }
 
             damageBuilding(building, damage) {
@@ -7078,14 +7108,12 @@
                     }
                 }
 
-                if (this.player) {
-                    this.terrainSystem.update(this.player.position);
-                    this.chunkManager.update(this.player.position);
-                }
-                this.atmosphereSystem.update(dt);
-                this.oceanSystem.update(dt);
-                this.gpuParticles.update(dt);
-                this.renderDebugPanel.update(dt);
+                if (this.player && this.terrainSystem) this.terrainSystem.update(this.player.position);
+                if (this.player && this.chunkManager) this.chunkManager.update(this.player.position);
+                if (this.atmosphereSystem) this.atmosphereSystem.update(dt);
+                if (this.oceanSystem) this.oceanSystem.update(dt);
+                if (this.gpuParticles) this.gpuParticles.update(dt);
+                if (this.renderDebugPanel) this.renderDebugPanel.update(dt);
 
                 this.composer.render();
             }
@@ -7117,12 +7145,14 @@
 
             engine.jetMesh = AssetFactory.createJetMesh(type);
             engine.player.add(engine.jetMesh);
-            engine.jetModelSystem.loadJet(type, (jetType) => AssetFactory.createJetMesh(jetType)).then((model) => {
-                if (!model || State.currentJetType !== type || !engine.player) return;
-                if (engine.jetMesh?.parent === engine.player) engine.player.remove(engine.jetMesh);
-                engine.jetMesh = model;
-                engine.player.add(engine.jetMesh);
-            });
+            if (engine.jetModelSystem) {
+                engine.jetModelSystem.loadJet(type, (jetType) => AssetFactory.createJetMesh(jetType)).then((model) => {
+                    if (!model || State.currentJetType !== type || !engine.player) return;
+                    if (engine.jetMesh?.parent === engine.player) engine.player.remove(engine.jetMesh);
+                    engine.jetMesh = model;
+                    engine.player.add(engine.jetMesh);
+                });
+            }
 
             engine.player.position.copy(pos);
             engine.player.quaternion.copy(quat);
