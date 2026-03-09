@@ -1,20 +1,23 @@
-export class RenderDebugPanel {
-  constructor(renderer) {
-    this.renderer = renderer;
-    this.el = document.createElement('div');
-    this.el.style.cssText = 'position:absolute;left:12px;bottom:12px;padding:8px 10px;background:rgba(0,0,0,.45);color:#9df;font:12px monospace;z-index:20;pointer-events:none;';
-    document.body.appendChild(this.el);
-    this.acc = 0;
-    this.frames = 0;
-    this.fps = 0;
+// Babylon-first renderer bootstrap with WebGPU fallback.
+export class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.engine = null;
+    this.scene = null;
+    this.usingWebGPU = false;
   }
-  update(dt) {
-    this.acc += dt; this.frames++;
-    if (this.acc > 0.5) {
-      this.fps = Math.round(this.frames / this.acc);
-      this.acc = 0; this.frames = 0;
-      const i = this.renderer.info;
-      this.el.textContent = `FPS ${this.fps} | Draw ${i.render.calls} | Tris ${i.render.triangles}`;
+
+  async initialize() {
+    if (BABYLON.WebGPUEngine?.IsSupportedAsync && await BABYLON.WebGPUEngine.IsSupportedAsync) {
+      this.engine = new BABYLON.WebGPUEngine(this.canvas, { antialias: true });
+      await this.engine.initAsync();
+      this.usingWebGPU = true;
+    } else {
+      this.engine = new BABYLON.Engine(this.canvas, true, { stencil: true, adaptToDeviceRatio: true });
     }
+    this.scene = new BABYLON.Scene(this.engine);
+    this.scene.clearColor = new BABYLON.Color4(0.01, 0.02, 0.05, 1);
+    this.scene.environmentIntensity = 1.2;
+    return this.scene;
   }
 }
